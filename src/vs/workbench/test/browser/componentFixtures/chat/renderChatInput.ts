@@ -42,6 +42,7 @@ import { IChatPetWidgetService } from '../../../../contrib/chat/browser/widget/c
 import { configureChatPetFixtureFileRoot, FixtureChatPetService, assertChatPetInScreenshot } from './chatPetFixtureUtils.js';
 import { IVoiceInputModeService, VoiceInputMode } from '../../../../contrib/chat/browser/voiceInputMode/voiceInputMode.js';
 import { ChatVoiceInputModeAction } from '../../../../contrib/chat/browser/voiceInputMode/voiceInputModeActionViewItem.js';
+import { ClearChatInputAction } from '../../../../contrib/chat/browser/actions/chatExecuteActions.js';
 import { IVoiceSessionController } from '../../../../contrib/chat/browser/voiceClient/voiceSessionController.js';
 import { IMicCaptureService } from '../../../../contrib/chat/browser/voiceClient/micCaptureService.js';
 import { ITtsPlaybackService } from '../../../../contrib/chat/browser/voiceClient/ttsPlaybackService.js';
@@ -296,6 +297,10 @@ export async function renderChatInput(context: ComponentFixtureContext, fixtureO
 		// Order 2 puts the voice control between the pickers and Send, where the
 		// real dictation / Voice Mode actions are contributed.
 		menuService.addItem(MenuId.ChatExecute, { command: { id: 'fixture.voiceControl', title: 'Voice', icon: voiceControlRenderings[voiceControl].icon }, group: 'navigation', order: 2 });
+	}
+	if (value) {
+		// The fixture menu has no context keys, so mirror Clear Prompt's when clause: shown while there is a draft.
+		menuService.addItem(MenuId.ChatExecute, { command: { id: ClearChatInputAction.ID, title: 'Clear Prompt', icon: Codicon.eraser }, group: 'navigation', order: 3 });
 	}
 	menuService.addItem(MenuId.ChatExecute, { command: { id: 'workbench.action.chat.submit', title: 'Send', icon: Codicon.arrowUpCompact, precondition: fixtureOptions.sendEnabled === false ? ContextKeyExpr.false() : undefined }, group: 'navigation', order: 4 });
 	const hasCustomSecondaryPickerLabels = fixtureOptions.secondaryPickerLabels !== undefined;

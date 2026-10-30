@@ -6,8 +6,10 @@
 import assert from 'assert';
 import { DisposableStore } from '../../../../../../base/common/lifecycle.js';
 import { constObservable, observableValue } from '../../../../../../base/common/observable.js';
+import { ThemeIcon } from '../../../../../../base/common/themables.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
+import { withTestCodeEditor } from '../../../../../../editor/test/browser/testCodeEditor.js';
 import { upcastPartial } from '../../../../../../base/test/common/mock.js';
 import { CommandsRegistry } from '../../../../../../platform/commands/common/commands.js';
 import { IMenuItem, isIMenuItem, MenuId, MenuRegistry } from '../../../../../../platform/actions/common/actions.js';
@@ -19,7 +21,7 @@ import { ILogService, NullLogService } from '../../../../../../platform/log/comm
 import { IsSessionsWindowContext } from '../../../../../common/contextkeys.js';
 import { AGENT_HOST_EXISTING_SESSION_HARNESS_PICKER_ENABLED_CONTEXT_KEY } from '../../../../../../platform/agentHost/common/agentHostEnablementService.js';
 import { type IChatAcceptInputOptions, IChatWidget, IChatWidgetService } from '../../../browser/chat.js';
-import { CancelAction, ChatEditingSessionSubmitAction, ChatSubmitAction, ExecuteHandoffActionId, GetHandoffsActionId, OpenDelegationPickerAction, OpenModelPickerAction, OpenSessionTargetPickerAction, registerChatExecuteActions } from '../../../browser/actions/chatExecuteActions.js';
+import { CancelAction, ChatEditingSessionSubmitAction, ChatSubmitAction, ClearChatInputAction, ExecuteHandoffActionId, GetHandoffsActionId, OpenDelegationPickerAction, OpenModelPickerAction, OpenSessionTargetPickerAction, registerChatExecuteActions } from '../../../browser/actions/chatExecuteActions.js';
 import { ChatQueueMessageAction, ChatSteerWithMessageAction } from '../../../browser/actions/chatQueueActions.js';
 import { AgentSessionProviders } from '../../../browser/agentSessions/agentSessions.js';
 import { ChatContextKeys } from '../../../common/actions/chatContextKeys.js';
@@ -666,5 +668,58 @@ suite('ChatSubmitAction', () => {
 		});
 
 		assert.deepStrictEqual(acceptedOptions, { cancelCurrentRequest: true });
+	});
+});
+
+suite('ClearChatInputAction', () => {
+	ensureNoDisposablesAreLeakedInTestSuite();
+
+	let chatExecuteActions: DisposableStore;
+	suiteSetup(() => {
+		chatExecuteActions = registerChatExecuteActions();
+	});
+
+	suiteTeardown(() => {
+		chatExecuteActions.dispose();
+	});
+
+	test('shows beside Send only while there is a draft and no request is running', () => {
+		const item = MenuRegistry.getMenuItems(MenuId.ChatExecute)
+			.find((candidate): candidate is IMenuItem => isIMenuItem(candidate) && candidate.command.id === ClearChatInputAction.ID);
+		assert.ok(item?.when);
+		const evaluate = (values: Record<string, ContextKeyValue>) => item.when!.evaluate({
+			getValue: <T extends ContextKeyValue = ContextKeyValue>(key: string) => values[key] as T,
+		});
+
+		assert.deepStrictEqual({
+			order: item.order,
+			icon: ThemeIcon.isThemeIcon(item.command.icon) ? item.command.icon.id : undefined,
+			draft: evaluate({ [ChatContextKeys.inputHasText.key]: true }),
+			empty: evaluate({ [ChatContextKeys.inputHasText.key]: false }),
+			requestRunning: evaluate({ [ChatContextKeys.inputHasText.key]: true, [ChatContextKeys.hasActiveRequest.key]: true }),
+		}, {
+			order: 3,
+			icon: 'chat-clear-input',
+			draft: true,
+			empty: false,
+			requestRunning: false,
+		});
+	});
+
+	test('clears the prompt as one edit that Undo reverts, and keeps focus in the input', () => {
+		withTestCodeEditor('Explain this file\nand its tests', {}, (editor, _viewModel, instantiationService) => {
+			let focused = 0;
+			const widget = upcastPartial<IChatWidget>({ inputEditor: editor, focusInput: () => { focused++; } });
+
+			instantiationService.invokeFunction(accessor => new ClearChatInputAction().run(accessor, { widget }));
+			const afterClear = editor.getValue();
+			editor.getModel()!.undo();
+
+			assert.deepStrictEqual({ afterClear, afterUndo: editor.getValue(), focused }, {
+				afterClear: '',
+				afterUndo: 'Explain this file\nand its tests',
+				focused: 1,
+			});
+		});
 	});
 });

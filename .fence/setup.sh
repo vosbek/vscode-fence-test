@@ -3,3 +3,6 @@
 set -euo pipefail
 # --ignore-scripts: this repository's install scripts build native modules the fence does not need.
 npm ci --ignore-scripts
+# The browser check transpiles with build/next/build-fast.ts and runs VS Code's browser test runner in Chromium.
+(cd build && npm ci --ignore-scripts)
+npx playwright install chromium

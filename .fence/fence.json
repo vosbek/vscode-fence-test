@@ -1,5 +1,5 @@
 {
-  "$comment": "The fence's configuration, written by the factory onboarding from what this repository already uses. People own this file (CODEOWNERS). docs/fence.md explains each field. VS Code: the unit check is a repository-local script written at onboarding (.fence/local/unit-affected.mjs); browser, Electron, layers (npm run valid-layers-check) and full compile stay with VS Code's own CI.",
+  "$comment": "The fence's configuration, written by the factory onboarding from what this repository already uses. People own this file (CODEOWNERS). docs/fence.md explains each field. VS Code: the unit check is a repository-local script written at onboarding (.fence/local/unit-affected.mjs); Electron, layers (npm run valid-layers-check) and full compile stay with VS Code's own CI.",
   "mode": "large repository: checks run on the files a change touches, compared with the merge base",
   "builtins": [
     "secrets",
@@ -57,6 +57,19 @@
       "files": "affected",
       "glob": "src/vs/**/test/{common,node}/**/*.test.ts",
       "hint": "Run the failing test: node .fence/local/unit-affected.mjs <file>"
+    },
+    {
+      "id": "browser",
+      "category": "tests",
+      "title": "Browser unit tests of affected code (Chromium, VS Code's own runner)",
+      "run": [
+        "node",
+        ".fence/local/browser-affected.mjs"
+      ],
+      "parse": "exit",
+      "files": "affected",
+      "glob": "src/vs/**/test/browser/**/*.test.ts",
+      "hint": "Run one: node test/unit/browser/index.js --browser chromium --run <file> (after node build/next/build-fast.ts --client-only)"
     }
   ],
   "lintCategories": {

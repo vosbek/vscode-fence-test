@@ -64,7 +64,14 @@
     "no-implied-eval": "security",
     "no-new-func": "security",
     "no-await-in-loop": "performance",
-    "@typescript-eslint/*": "practices"
+    "@typescript-eslint/*": "practices",
+    "local/code-import-patterns": "structure",
+    "local/code-layering": "structure",
+    "local/code-amd-node-module": "structure",
+    "local/code-no-any-casts": "practices",
+    "local/code-no-unexternalized-strings": "practices",
+    "no-restricted-imports": "patterns",
+    "local/code-no-dangerous-type-assertions": "practices"
   },
   "secrets": {
     "scope": "changed",

@@ -311,7 +311,7 @@
         ".eslint-plugin-local",
         "eslint.config.js"
       ],
-      "summary": "VS Code's own ESLint rules. code-layering and code-import-patterns already encode the layering this map shows; most run as warnings.",
+      "summary": "VS Code's own ESLint rules. code-layering and code-import-patterns already encode the layering this map shows; they are configured as warnings, and build/eslint.ts fails on any warning or error.",
       "evidence": [
         {
           "path": "eslint.config.js",
@@ -322,6 +322,11 @@
           "path": "eslint.config.js",
           "line": 1773,
           "expect": "'target': 'src/vs/base/~'"
+        },
+        {
+          "path": "build/eslint.ts",
+          "line": 104,
+          "expect": "if (warningCount > 0 || errorCount > 0) {"
         }
       ]
     },
@@ -1468,7 +1473,7 @@
       "status": "documented",
       "context": "Four million lines shared by the desktop app, the web build, the server and the standalone Monaco editor.",
       "decision": "Each layer imports only the layers below it, and each environment (common, browser, node, electron-*) only the ones it may run in.",
-      "consequences": "Enforced by the repository's own lint rules code-import-patterns and code-layering, and by npm run valid-layers-check. Most run as warnings, so existing violations do not fail the build; the fence makes any new one block.",
+      "consequences": "Enforced by the repository's own lint rules code-import-patterns and code-layering (build/eslint.ts fails on any warning) and by npm run valid-layers-check. The fence runs the same lint rules on the files a change touches.",
       "evidence": [
         {
           "path": ".github/copilot-instructions.md",
@@ -1520,23 +1525,6 @@
           "path": "src/vs/base/common/color.ts",
           "line": 680,
           "expect": "throw new Error('Invalid color format ' + css);"
-        }
-      ]
-    },
-    {
-      "id": "lint-warnings-not-blocking",
-      "title": "Layering rules are warnings, so new violations can merge",
-      "severity": "medium",
-      "category": "structure",
-      "detail": "code-layering and code-import-patterns are configured as warn. The fence's lint ratchet counts warnings per file and rule, so a change cannot add one.",
-      "components": [
-        "lint-rules"
-      ],
-      "evidence": [
-        {
-          "path": "eslint.config.js",
-          "line": 117,
-          "expect": "'local/code-layering'"
         }
       ]
     }

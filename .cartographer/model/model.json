@@ -150,7 +150,7 @@
       "evidence": [
         {
           "path": "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts",
-          "line": 1247,
+          "line": 1254,
           "expect": "export function registerChatExecuteActions(): DisposableStore {"
         }
       ]
@@ -1895,7 +1895,7 @@
           "action": "ChatSubmitAction declares the ChatExecute menu, order 4, shown when no request is active.",
           "evidence": {
             "path": "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts",
-            "line": 228,
+            "line": 229,
             "expect": "id: MenuId.ChatExecute,"
           }
         },

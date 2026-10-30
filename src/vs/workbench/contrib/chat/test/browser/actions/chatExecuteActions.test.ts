@@ -6,6 +6,7 @@
 import assert from 'assert';
 import { DisposableStore } from '../../../../../../base/common/lifecycle.js';
 import { constObservable, observableValue } from '../../../../../../base/common/observable.js';
+import { ThemeIcon } from '../../../../../../base/common/themables.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { withTestCodeEditor } from '../../../../../../editor/test/browser/testCodeEditor.js';
@@ -692,11 +693,13 @@ suite('ClearChatInputAction', () => {
 
 		assert.deepStrictEqual({
 			order: item.order,
+			icon: ThemeIcon.isThemeIcon(item.command.icon) ? item.command.icon.id : undefined,
 			draft: evaluate({ [ChatContextKeys.inputHasText.key]: true }),
 			empty: evaluate({ [ChatContextKeys.inputHasText.key]: false }),
 			requestRunning: evaluate({ [ChatContextKeys.inputHasText.key]: true, [ChatContextKeys.hasActiveRequest.key]: true }),
 		}, {
 			order: 3,
+			icon: 'chat-clear-input',
 			draft: true,
 			empty: false,
 			requestRunning: false,

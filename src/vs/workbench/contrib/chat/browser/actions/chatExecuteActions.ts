@@ -23,6 +23,7 @@ import { KeybindingWeight } from '../../../../../platform/keybinding/common/keyb
 import { ILogService } from '../../../../../platform/log/common/log.js';
 import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
 import { AGENT_HOST_EXISTING_SESSION_HARNESS_PICKER_ENABLED_CONTEXT_KEY } from '../../../../../platform/agentHost/common/agentHostEnablementService.js';
+import { registerIcon } from '../../../../../platform/theme/common/iconRegistry.js';
 import { IsSessionsWindowContext } from '../../../../common/contextkeys.js';
 import { ChatContextKeyExprs, ChatContextKeys } from '../../common/actions/chatContextKeys.js';
 import { buildCustomAgentHandoffsInfo, getHandoffId, IChatMode, IChatModeService, IChatModes } from '../../common/chatModes.js';
@@ -920,6 +921,12 @@ class SendToNewChatAction extends Action2 {
 }
 
 /**
+ * An eraser rather than a close X: next to Send, an X reads as cancel or close the chat.
+ * Registered so product icon themes can replace it.
+ */
+const clearChatInputIcon = registerIcon('chat-clear-input', Codicon.eraser, localize('chatClearInputIcon', "Icon for the Clear Prompt action in the chat input."));
+
+/**
  * Clears the prompt text in the chat input, keeping attached context. The edit goes
  * through the editor's undo stack, so Undo brings the draft back.
  */
@@ -930,7 +937,7 @@ export class ClearChatInputAction extends Action2 {
 			id: ClearChatInputAction.ID,
 			title: localize2('chat.clearInput.label', "Clear Prompt"),
 			tooltip: localize('chat.clearInput.tooltip', "Clear Prompt (Undo restores it)"),
-			icon: Codicon.close,
+			icon: clearChatInputIcon,
 			precondition: ChatContextKeys.inputHasText,
 			category: CHAT_CATEGORY,
 			f1: true,

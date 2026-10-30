@@ -300,7 +300,7 @@ export async function renderChatInput(context: ComponentFixtureContext, fixtureO
 	}
 	if (value) {
 		// The fixture menu has no context keys, so mirror Clear Prompt's when clause: shown while there is a draft.
-		menuService.addItem(MenuId.ChatExecute, { command: { id: ClearChatInputAction.ID, title: 'Clear Prompt', icon: Codicon.close }, group: 'navigation', order: 3 });
+		menuService.addItem(MenuId.ChatExecute, { command: { id: ClearChatInputAction.ID, title: 'Clear Prompt', icon: Codicon.eraser }, group: 'navigation', order: 3 });
 	}
 	menuService.addItem(MenuId.ChatExecute, { command: { id: 'workbench.action.chat.submit', title: 'Send', icon: Codicon.arrowUpCompact, precondition: fixtureOptions.sendEnabled === false ? ContextKeyExpr.false() : undefined }, group: 'navigation', order: 4 });
 	const hasCustomSecondaryPickerLabels = fixtureOptions.secondaryPickerLabels !== undefined;

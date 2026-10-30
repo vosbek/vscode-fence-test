@@ -663,7 +663,8 @@ export namespace Color {
 			}
 
 			/**
-			 * Parse a CSS color and return a {@link Color}.
+			 * Parse a CSS color and return a {@link Color}, or `null` when the color is not
+			 * in a supported format. Callers rely on `null` to fall back, so this never throws.
 			 * @param css The CSS color to parse.
 			 * @see https://drafts.csswg.org/css-color/#typedef-color
 			 */
@@ -675,9 +676,9 @@ export namespace Color {
 					return parseHex(css);
 				}
 				if (css.startsWith('rgba(')) {
-					const color = css.match(/rgba\((?<r>(?:\+|-)?\d+), *(?<g>(?:\+|-)?\d+), *(?<b>(?:\+|-)?\d+), *(?<a>(?:\+|-)?\d+(\.\d+)?)\)/);
+					const color = css.match(/rgba\(\s*(?<r>(?:\+|-)?\d+)\s*,\s*(?<g>(?:\+|-)?\d+)\s*,\s*(?<b>(?:\+|-)?\d+)\s*,\s*(?<a>(?:\+|-)?(?:\d+(?:\.\d+)?|\.\d+))\s*\)/);
 					if (!color) {
-						throw new Error('Invalid color format ' + css);
+						return null;
 					}
 					const r = parseInt(color.groups?.r ?? '0');
 					const g = parseInt(color.groups?.g ?? '0');
@@ -686,9 +687,9 @@ export namespace Color {
 					return new Color(new RGBA(r, g, b, a));
 				}
 				if (css.startsWith('rgb(')) {
-					const color = css.match(/rgb\((?<r>(?:\+|-)?\d+), *(?<g>(?:\+|-)?\d+), *(?<b>(?:\+|-)?\d+)\)/);
+					const color = css.match(/rgb\(\s*(?<r>(?:\+|-)?\d+)\s*,\s*(?<g>(?:\+|-)?\d+)\s*,\s*(?<b>(?:\+|-)?\d+)\s*\)/);
 					if (!color) {
-						throw new Error('Invalid color format ' + css);
+						return null;
 					}
 					const r = parseInt(color.groups?.r ?? '0');
 					const g = parseInt(color.groups?.g ?? '0');

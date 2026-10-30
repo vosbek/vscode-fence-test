@@ -285,6 +285,13 @@ suite('Color', () => {
 					assert.deepStrictEqual(Color.Format.CSS.parse('#0102030'), null);
 				});
 
+				test('unsupported rgb() and rgba() forms return null instead of throwing', () => {
+					assert.deepStrictEqual(
+						['rgb(', 'rgb()', 'rgb(255 0 0)', 'rgb(1, 2)', 'rgb(a, b, c)', 'rgba(', 'rgba(1, 2, 3)', 'rgba(1, 2, 3, 50%)'].map(css => Color.Format.CSS.parse(css)),
+						[null, null, null, null, null, null, null, null]
+					);
+				});
+
 				test('transparent', () => {
 					assert.deepStrictEqual(Color.Format.CSS.parse('transparent')!.rgba, new RGBA(0, 0, 0, 0));
 				});
@@ -519,6 +526,13 @@ suite('Color', () => {
 					assert.deepStrictEqual(Color.Format.CSS.parse('rgb(13, 13, 13)')!.rgba, new RGBA(13, 13, 13, 1));
 					assert.deepStrictEqual(Color.Format.CSS.parse('rgb(14, 14, 14)')!.rgba, new RGBA(14, 14, 14, 1));
 					assert.deepStrictEqual(Color.Format.CSS.parse('rgb(15, 15, 15)')!.rgba, new RGBA(15, 15, 15, 1));
+				});
+
+				test('rgb() and rgba() with spaces and a leading-dot alpha', () => {
+					assert.deepStrictEqual(
+						['rgb( 1 , 2 , 3 )', 'rgba(0, 0, 0, .5)', 'rgba( 10,20,30 , 0.25 )'].map(css => Color.Format.CSS.parse(css)!.rgba),
+						[new RGBA(1, 2, 3, 1), new RGBA(0, 0, 0, 0.5), new RGBA(10, 20, 30, 0.25)]
+					);
 				});
 
 				test('rgba()', () => {

@@ -254,7 +254,7 @@
       "evidence": [
         {
           "path": "src/vs/base/common/color.ts",
-          "line": 670,
+          "line": 671,
           "expect": "export function parse(css: string): Color | null"
         }
       ],
@@ -1380,11 +1380,11 @@
         },
         {
           "component": "base-color",
-          "action": "For rgb( and rgba( that its pattern does not match, parse throws instead of returning null, so canRender throws.",
+          "action": "For rgb( and rgba( forms its patterns do not match (CSS Color 4 space syntax, percentages), parse returns null, so canRender falls back to the DOM renderer.",
           "evidence": {
             "path": "src/vs/base/common/color.ts",
-            "line": 680,
-            "expect": "throw new Error('Invalid color format ' + css);"
+            "line": 681,
+            "expect": "return null;"
           }
         },
         {
@@ -1406,24 +1406,24 @@
       "kind": "core-logic",
       "component": "base-color",
       "path": "src/vs/base/common/color.ts",
-      "start": 670,
-      "end": 700,
+      "start": 671,
+      "end": 701,
       "language": "typescript",
-      "code": "\t\t\texport function parse(css: string): Color | null {\n\t\t\t\tif (css === 'transparent') {\n\t\t\t\t\treturn Color.transparent;\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('#')) {\n\t\t\t\t\treturn parseHex(css);\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('rgba(')) {\n\t\t\t\t\tconst color = css.match(/rgba\\((?<r>(?:\\+|-)?\\d+), *(?<g>(?:\\+|-)?\\d+), *(?<b>(?:\\+|-)?\\d+), *(?<a>(?:\\+|-)?\\d+(\\.\\d+)?)\\)/);\n\t\t\t\t\tif (!color) {\n\t\t\t\t\t\tthrow new Error('Invalid color format ' + css);\n\t\t\t\t\t}\n\t\t\t\t\tconst r = parseInt(color.groups?.r ?? '0');\n\t\t\t\t\tconst g = parseInt(color.groups?.g ?? '0');\n\t\t\t\t\tconst b = parseInt(color.groups?.b ?? '0');\n\t\t\t\t\tconst a = parseFloat(color.groups?.a ?? '0');\n\t\t\t\t\treturn new Color(new RGBA(r, g, b, a));\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('rgb(')) {\n\t\t\t\t\tconst color = css.match(/rgb\\((?<r>(?:\\+|-)?\\d+), *(?<g>(?:\\+|-)?\\d+), *(?<b>(?:\\+|-)?\\d+)\\)/);\n\t\t\t\t\tif (!color) {\n\t\t\t\t\t\tthrow new Error('Invalid color format ' + css);\n\t\t\t\t\t}\n\t\t\t\t\tconst r = parseInt(color.groups?.r ?? '0');\n\t\t\t\t\tconst g = parseInt(color.groups?.g ?? '0');\n\t\t\t\t\tconst b = parseInt(color.groups?.b ?? '0');\n\t\t\t\t\treturn new Color(new RGBA(r, g, b));\n\t\t\t\t}\n\t\t\t\t// TODO: Support more formats as needed\n\t\t\t\treturn parseNamedKeyword(css);\n\t\t\t}",
-      "why": "Declared Color | null, but throws for rgb()/rgba() its patterns do not match; callers expect null.",
+      "code": "\t\t\texport function parse(css: string): Color | null {\n\t\t\t\tif (css === 'transparent') {\n\t\t\t\t\treturn Color.transparent;\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('#')) {\n\t\t\t\t\treturn parseHex(css);\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('rgba(')) {\n\t\t\t\t\tconst color = css.match(/rgba\\(\\s*(?<r>(?:\\+|-)?\\d+)\\s*,\\s*(?<g>(?:\\+|-)?\\d+)\\s*,\\s*(?<b>(?:\\+|-)?\\d+)\\s*,\\s*(?<a>(?:\\+|-)?(?:\\d+(?:\\.\\d+)?|\\.\\d+))\\s*\\)/);\n\t\t\t\t\tif (!color) {\n\t\t\t\t\t\treturn null;\n\t\t\t\t\t}\n\t\t\t\t\tconst r = parseInt(color.groups?.r ?? '0');\n\t\t\t\t\tconst g = parseInt(color.groups?.g ?? '0');\n\t\t\t\t\tconst b = parseInt(color.groups?.b ?? '0');\n\t\t\t\t\tconst a = parseFloat(color.groups?.a ?? '0');\n\t\t\t\t\treturn new Color(new RGBA(r, g, b, a));\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('rgb(')) {\n\t\t\t\t\tconst color = css.match(/rgb\\(\\s*(?<r>(?:\\+|-)?\\d+)\\s*,\\s*(?<g>(?:\\+|-)?\\d+)\\s*,\\s*(?<b>(?:\\+|-)?\\d+)\\s*\\)/);\n\t\t\t\t\tif (!color) {\n\t\t\t\t\t\treturn null;\n\t\t\t\t\t}\n\t\t\t\t\tconst r = parseInt(color.groups?.r ?? '0');\n\t\t\t\t\tconst g = parseInt(color.groups?.g ?? '0');\n\t\t\t\t\tconst b = parseInt(color.groups?.b ?? '0');\n\t\t\t\t\treturn new Color(new RGBA(r, g, b));\n\t\t\t\t}\n\t\t\t\t// TODO: Support more formats as needed\n\t\t\t\treturn parseNamedKeyword(css);\n\t\t\t}",
+      "why": "Declared Color | null; callers in the GPU renderer and the window code rely on null to fall back, so it never throws.",
       "annotations": [
         {
-          "line": 680,
-          "note": "Throws where the signature promises null."
+          "line": 681,
+          "note": "Unsupported rgba() forms return null (they threw before this change)."
         },
         {
-          "line": 691,
+          "line": 692,
           "note": "Same for rgb()."
         }
       ],
       "pin": {
-        "commit": "9019233f1961",
-        "sha256": "da84a27a3b6d98c1"
+        "commit": "9ee266e3eec4",
+        "sha256": "bfc2d4e12a9ecd24"
       }
     },
     {
@@ -1493,11 +1493,11 @@
       "status": "documented",
       "context": "Callers ask whether a CSS color is usable and fall back when it is not.",
       "decision": "The signature is Color | null and the callers in the GPU renderer and the window code test for null.",
-      "consequences": "A throw for malformed rgb()/rgba() breaks both callers' fallback; this is the change in the demo pull request.",
+      "consequences": "parse returns null for every rgb()/rgba() form its patterns do not match, and accepts spaces and a leading-dot alpha; both callers' fallbacks work. Hidden tests probe it with 210 inputs.",
       "evidence": [
         {
           "path": "src/vs/base/common/color.ts",
-          "line": 670,
+          "line": 671,
           "expect": "export function parse(css: string): Color | null"
         },
         {
@@ -1508,27 +1508,7 @@
       ]
     }
   ],
-  "risks": [
-    {
-      "id": "parse-throws",
-      "title": "CSS color parse throws where callers expect null",
-      "severity": "medium",
-      "category": "correctness",
-      "detail": "rgb(255 0 0), rgba(0, 0, 0, .5) and rgb( 1, 2, 3 ) are valid CSS but do not match the parser's patterns, so parse throws. canRender in the GPU renderer would throw instead of falling back to the DOM.",
-      "components": [
-        "base-color",
-        "editor-gpu",
-        "platform-windows"
-      ],
-      "evidence": [
-        {
-          "path": "src/vs/base/common/color.ts",
-          "line": 680,
-          "expect": "throw new Error('Invalid color format ' + css);"
-        }
-      ]
-    }
-  ],
+  "risks": [],
   "glossary": [
     {
       "term": "contrib",

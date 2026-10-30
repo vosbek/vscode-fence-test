@@ -1,0 +1,101 @@
+{
+  "$comment": "The fence's configuration, written by the factory onboarding from what this repository already uses. People own this file (CODEOWNERS). docs/fence.md explains each field. VS Code: the unit check is a repository-local script written at onboarding (.fence/local/unit-affected.mjs); browser, Electron, layers (npm run valid-layers-check) and full compile stay with VS Code's own CI.",
+  "mode": "large repository: checks run on the files a change touches, compared with the merge base",
+  "builtins": [
+    "secrets",
+    "workflows",
+    "dependencies",
+    "map-coverage",
+    "guard",
+    "formal",
+    "exceptions"
+  ],
+  "checks": [
+    {
+      "id": "lint",
+      "category": "practices",
+      "title": "Lint rules (VS Code's own eslint.config.js, including code-layering and code-import-patterns)",
+      "run": [
+        "npx",
+        "eslint",
+        "-f",
+        "json",
+        "--no-warn-ignored"
+      ],
+      "parse": "eslint-json",
+      "files": "changed",
+      "glob": [
+        "src/**/*.{ts,tsx,js,mjs}",
+        "build/**/*.{ts,mjs}",
+        "extensions/**/*.ts"
+      ],
+      "ratchet": "diff"
+    },
+    {
+      "id": "types",
+      "category": "tests",
+      "title": "Type check (changed files, src/tsconfig.json)",
+      "parse": "tsc",
+      "tsconfig": "src/tsconfig.json",
+      "files": "changed",
+      "glob": "**/*.{ts,tsx}",
+      "ratchet": "diff",
+      "include": [
+        "src/typings",
+        "src/vscode-dts/vscode.d.ts"
+      ]
+    },
+    {
+      "id": "unit",
+      "category": "tests",
+      "title": "Unit tests of affected code (Node: test/common, test/node)",
+      "run": [
+        "node",
+        ".fence/local/unit-affected.mjs"
+      ],
+      "parse": "exit",
+      "files": "affected",
+      "glob": "src/vs/**/test/{common,node}/**/*.test.ts",
+      "hint": "Run the failing test: node .fence/local/unit-affected.mjs <file>"
+    }
+  ],
+  "lintCategories": {
+    "no-eval": "security",
+    "no-implied-eval": "security",
+    "no-new-func": "security",
+    "no-await-in-loop": "performance",
+    "@typescript-eslint/*": "practices"
+  },
+  "secrets": {
+    "scope": "changed",
+    "ignore": [
+      "**/package-lock.json",
+      "**/yarn.lock",
+      "**/*.min.js"
+    ]
+  },
+  "workflows": {
+    "scope": "changed"
+  },
+  "code": [
+    "**/*.{ts,tsx,js,jsx,mjs,cjs,py,go,java,cs,rs}"
+  ],
+  "fixers": {
+    "lint": [
+      [
+        "npx",
+        "eslint",
+        "--fix",
+        "--no-warn-ignored",
+        "{changed}"
+      ]
+    ],
+    "guard:ratchet": [
+      [
+        "python3",
+        ".cartographer/bin/check.py",
+        "--fix-lines"
+      ]
+    ]
+  }
+}

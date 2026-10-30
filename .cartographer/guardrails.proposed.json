@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "no-new-cycles",
+      "type": "no-new-cycles",
+      "severity": "block",
+      "description": "No import may close a dependency cycle between components.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "Cycles make components impossible to change or release separately.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 31,
+        "followedByFixOrRevert": 8,
+        "hitRatePct": 26,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "pinned-snippets",
+      "type": "pinned-snippets",
+      "severity": "block",
+      "description": "Code the model pins as key must not change without the model.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "3 snippets are pinned; changes to them silently invalidate the map.",
+      "_replay": {
+        "replayable": false,
+        "commits": null,
+        "fired": null,
+        "followedByFixOrRevert": null,
+        "hitRatePct": null,
+        "baseRatePct": null
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec",
+      "type": "co-change",
+      "severity": "block",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupService.test.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupService.test.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 86% of the time (6 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupService.test.ts followed 6 of 7 changes to agentHostWorktreeCleanupService.ts; 1 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 1,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": 0,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec-2",
+      "type": "co-change",
+      "severity": "block",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupService.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupService.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 86% of the time (6 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupService.ts followed 6 of 7 changes to agentHostWorktreeCleanupService.ts; 1 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 1,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": 0,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-sessionworktreecleanupaccessibilityhelp-sessionw",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts changes with src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts 100% of the time (12 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.test.ts followed 12 of 12 changes to sessionWorktreeCleanupAccessibilityHelp.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-sessionworktreecleanupaccessibilityhelp-sessionw-2",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts changes with src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts 100% of the time (12 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.ts followed 12 of 12 changes to sessionWorktreeCleanupAccessibilityHelp.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec-3",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 100% of the time (7 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.test.ts followed 7 of 7 changes to agentHostWorktreeCleanupService.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec-4",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 100% of the time (7 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.ts followed 7 of 7 changes to agentHostWorktreeCleanupService.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "interface-change",
+      "type": "interface-change",
+      "severity": "warn",
+      "on": "removed",
+      "description": "Removing or changing a declared interface (route, tool, topic) needs its contract updated.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "31 interface declarations found.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "tests-required",
+      "type": "tests-required",
+      "severity": "warn",
+      "minLines": 30,
+      "description": "A code change of 30+ lines comes with a test change.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "4606 test files import production code here, so the convention exists.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 3,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": 0,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "max-size",
+      "type": "max-size",
+      "severity": "warn",
+      "max": 1000,
+      "description": "Changes stay reviewable.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "Large changes get shallow reviews.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 32,
+        "followedByFixOrRevert": 16,
+        "hitRatePct": 50,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "ratchet",
+      "type": "ratchet",
+      "severity": "block",
+      "description": "Structural debt never grows: layer violations, dependency cycles, dependencies not in the model, hidden dependencies, components no test imports, model check errors.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "Locks today's counts so they can only go down. Run --baseline after accepting.",
+      "_replay": {
+        "replayable": false,
+        "commits": null,
+        "fired": null,
+        "followedByFixOrRevert": null,
+        "hitRatePct": null,
+        "baseRatePct": null
+      }
+    },
+    {
+      "id": "layering",
+      "type": "layering",
+      "severity": "block",
+      "description": "Components depend downward through the model's layers: Build, tests and lint rules → Entry points → Workbench → Editor → Platform → Base.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "The model orders 6 layers; this keeps new code from importing upward.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    }
+  ]
+}

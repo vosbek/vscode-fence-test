@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.cfg.outputs.ok == 'true'
         with:
-          node-version: 22
+          node-version: 24
       - if: steps.cfg.outputs.ok == 'true'
         run: bash .fence/setup.sh
       - name: Run (counts and requirement titles only)

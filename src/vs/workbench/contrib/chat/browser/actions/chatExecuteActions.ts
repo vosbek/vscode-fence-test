@@ -919,6 +919,53 @@ class SendToNewChatAction extends Action2 {
 	}
 }
 
+/**
+ * Clears the prompt text in the chat input, keeping attached context. The edit goes
+ * through the editor's undo stack, so Undo brings the draft back.
+ */
+export class ClearChatInputAction extends Action2 {
+	static readonly ID = 'workbench.action.chat.clearInput';
+	constructor() {
+		super({
+			id: ClearChatInputAction.ID,
+			title: localize2('chat.clearInput.label', "Clear Prompt"),
+			tooltip: localize('chat.clearInput.tooltip', "Clear Prompt (Undo restores it)"),
+			icon: Codicon.close,
+			precondition: ChatContextKeys.inputHasText,
+			category: CHAT_CATEGORY,
+			f1: true,
+			menu: [{
+				id: MenuId.ChatExecute,
+				// Before Send (order 4), and only while there is a draft to clear.
+				order: 3,
+				group: 'navigation',
+				when: ContextKeyExpr.and(
+					ChatContextKeys.inputHasText,
+					whenNoActiveRequest,
+					ChatContextKeys.withinEditSessionDiff.negate(),
+				),
+			}],
+		});
+	}
+
+	run(accessor: ServicesAccessor, ...args: unknown[]): void {
+		const context = args[0] as IChatExecuteActionContext | undefined;
+		const widget = context?.widget ?? accessor.get(IChatWidgetService).lastFocusedWidget;
+		if (!widget) {
+			return;
+		}
+		const editor = widget.inputEditor;
+		const model = editor.getModel();
+		if (!model || model.getValueLength() === 0) {
+			return;
+		}
+		editor.pushUndoStop();
+		editor.executeEdits(ClearChatInputAction.ID, [{ range: model.getFullModelRange(), text: '' }]);
+		editor.pushUndoStop();
+		widget.focusInput();
+	}
+}
+
 export const CancelChatActionId = 'workbench.action.chat.cancel';
 export class CancelAction extends Action2 {
 	static readonly ID = CancelChatActionId;
@@ -1204,6 +1251,7 @@ export function registerChatExecuteActions(): DisposableStore {
 	store.add(registerAction2(SubmitWithoutDispatchingAction));
 	store.add(registerAction2(CancelAction));
 	store.add(registerAction2(SendToNewChatAction));
+	store.add(registerAction2(ClearChatInputAction));
 	store.add(registerAction2(ChatSubmitWithCodebaseAction));
 	store.add(registerAction2(ToggleChatModeAction));
 	store.add(registerAction2(SwitchToNextModelAction));

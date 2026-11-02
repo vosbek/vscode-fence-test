@@ -1,0 +1,129 @@
+{
+  "$comment": "The fence's configuration, written by the factory onboarding from what this repository already uses. People own this file (CODEOWNERS). docs/fence.md explains each field. VS Code: the unit check is a repository-local script written at onboarding (.fence/local/unit-affected.mjs); Electron, layers (npm run valid-layers-check) and full compile stay with VS Code's own CI.",
+  "mode": "large repository: checks run on the files a change touches, compared with the merge base",
+  "builtins": [
+    "secrets",
+    "workflows",
+    "dependencies",
+    "map-coverage",
+    "guard",
+    "formal",
+    "exceptions"
+  ],
+  "checks": [
+    {
+      "id": "lint",
+      "category": "practices",
+      "title": "Lint rules (VS Code's own eslint.config.js, including code-layering and code-import-patterns)",
+      "run": [
+        "npx",
+        "eslint",
+        "-f",
+        "json",
+        "--no-warn-ignored"
+      ],
+      "parse": "eslint-json",
+      "files": "changed",
+      "glob": [
+        "src/**/*.{ts,tsx,js,mjs}",
+        "build/**/*.{ts,mjs}",
+        "extensions/**/*.ts"
+      ],
+      "ratchet": "diff",
+      "explain": "VS Code's own ESLint rules on the changed files, including its layering and import rules. Only findings the change adds count."
+    },
+    {
+      "id": "types",
+      "category": "tests",
+      "title": "Type check (changed files, src/tsconfig.json)",
+      "parse": "tsc",
+      "tsconfig": "src/tsconfig.json",
+      "files": "changed",
+      "glob": "**/*.{ts,tsx}",
+      "ratchet": "diff",
+      "include": [
+        "src/typings",
+        "src/vscode-dts/vscode.d.ts"
+      ],
+      "explain": "The TypeScript compiler on the changed files against VS Code's tsconfig. Only errors the change adds count."
+    },
+    {
+      "id": "unit",
+      "category": "tests",
+      "title": "Unit tests of affected code (Node: test/common, test/node)",
+      "run": [
+        "node",
+        ".fence/local/unit-affected.mjs"
+      ],
+      "parse": "exit",
+      "files": "affected",
+      "glob": "src/vs/**/test/{common,node}/**/*.test.ts",
+      "hint": "Run the failing test: node .fence/local/unit-affected.mjs <file>",
+      "explain": "Node unit tests in the test files that import a changed file, run with VS Code's own test setup.",
+      "results": ".cache/fence/results/unit.xml"
+    },
+    {
+      "id": "browser",
+      "category": "tests",
+      "title": "Browser unit tests of affected code (Chromium, VS Code's own runner)",
+      "run": [
+        "node",
+        ".fence/local/browser-affected.mjs"
+      ],
+      "parse": "exit",
+      "files": "affected",
+      "glob": "src/vs/**/test/browser/**/*.test.ts",
+      "hint": "Run one: node test/unit/browser/index.js --browser chromium --run <file> (after node build/next/build-fast.ts --client-only)",
+      "explain": "Browser unit tests in the test files that import a changed file, run in Chromium by VS Code's own runner.",
+      "results": ".cache/fence/results/browser.xml"
+    }
+  ],
+  "lintCategories": {
+    "no-eval": "security",
+    "no-implied-eval": "security",
+    "no-new-func": "security",
+    "no-await-in-loop": "performance",
+    "@typescript-eslint/*": "practices",
+    "local/code-import-patterns": "structure",
+    "local/code-layering": "structure",
+    "local/code-amd-node-module": "structure",
+    "local/code-no-any-casts": "practices",
+    "local/code-no-unexternalized-strings": "practices",
+    "no-restricted-imports": "patterns",
+    "local/code-no-dangerous-type-assertions": "practices"
+  },
+  "secrets": {
+    "scope": "changed",
+    "ignore": [
+      "**/package-lock.json",
+      "**/yarn.lock",
+      "**/*.min.js"
+    ]
+  },
+  "workflows": {
+    "scope": "changed"
+  },
+  "code": [
+    "**/*.{ts,tsx,js,jsx,mjs,cjs,py,go,java,cs,rs}"
+  ],
+  "fixers": {
+    "lint": [
+      [
+        "npx",
+        "eslint",
+        "--fix",
+        "--no-warn-ignored",
+        "{changed}"
+      ]
+    ],
+    "guard:ratchet": [
+      [
+        "python3",
+        ".cartographer/bin/check.py",
+        "--fix-lines"
+      ]
+    ]
+  },
+  "guardMayBeEmpty": true,
+  "$guardMayBeEmpty": "Set while onboarding: no guard rule is accepted yet, so the guard enforces nothing. A person removes this once they accept rules in the rules workbench (guard.py --serve)."
+}

@@ -1,0 +1,5 @@
+{
+  "historyDays": 3,
+  "maxCommits": 400,
+  "exclude": ["out/*", "out-*/*", "*/fixtures/*", "*/test/*/fixtures/*", "extensions/*/server/out/*", "cli/target/*", "*.snap"]
+}

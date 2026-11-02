@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "no-new-cycles",
+      "type": "no-new-cycles",
+      "severity": "block",
+      "description": "No import may close a dependency cycle between components.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "Cycles make components impossible to change or release separately.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 31,
+        "followedByFixOrRevert": 8,
+        "hitRatePct": 26,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "pinned-snippets",
+      "type": "pinned-snippets",
+      "severity": "block",
+      "description": "Code the model pins as key must not change without the model.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "3 snippets are pinned; changes to them silently invalidate the map.",
+      "_replay": {
+        "replayable": false,
+        "commits": null,
+        "fired": null,
+        "followedByFixOrRevert": null,
+        "hitRatePct": null,
+        "baseRatePct": null
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec",
+      "type": "co-change",
+      "severity": "block",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupService.test.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupService.test.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 86% of the time (6 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupService.test.ts followed 6 of 7 changes to agentHostWorktreeCleanupService.ts; 1 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 1,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": 0,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec-2",
+      "type": "co-change",
+      "severity": "block",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupService.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupService.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 86% of the time (6 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupService.ts followed 6 of 7 changes to agentHostWorktreeCleanupService.ts; 1 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 1,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": 0,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-sessionworktreecleanupaccessibilityhelp-sessionw",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts changes with src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts 100% of the time (12 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.test.ts followed 12 of 12 changes to sessionWorktreeCleanupAccessibilityHelp.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-sessionworktreecleanupaccessibilityhelp-sessionw-2",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts changes with src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupAccessibilityHelp.ts 100% of the time (12 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.ts followed 12 of 12 changes to sessionWorktreeCleanupAccessibilityHelp.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec-3",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/test/browser/sessionWorktreeCleanupEditor.test.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 100% of the time (7 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.test.ts followed 7 of 7 changes to agentHostWorktreeCleanupService.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "co-change-agenthostworktreecleanupservice-sessionworktreec-4",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts",
+      "require": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts",
+      "description": "src/vs/sessions/contrib/sessionInputBanners/browser/sessionWorktreeCleanupEditor.ts changes with src/vs/platform/agentHost/node/agentHostWorktreeCleanupService.ts 100% of the time (7 commits).",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "sessionWorktreeCleanupEditor.ts followed 7 of 7 changes to agentHostWorktreeCleanupService.ts; 0 time(s) it was skipped and a fix to it followed within 14 days.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "interface-change",
+      "type": "interface-change",
+      "severity": "warn",
+      "on": "removed",
+      "description": "Removing or changing a declared interface (route, tool, topic) needs its contract updated.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "31 interface declarations found.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "max-size",
+      "type": "max-size",
+      "severity": "warn",
+      "max": 1000,
+      "description": "Changes stay reviewable.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "Large changes get shallow reviews.",
+      "_replay": {
+        "replayable": true,
+        "commits": 361,
+        "fired": 32,
+        "followedByFixOrRevert": 16,
+        "hitRatePct": 50,
+        "baseRatePct": 18
+      }
+    },
+    {
+      "id": "ratchet",
+      "type": "ratchet",
+      "severity": "block",
+      "description": "Structural debt never grows: layer violations, dependency cycles, dependencies not in the model, hidden dependencies, components no test imports, model check errors.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "_why": "Locks today's counts so they can only go down. Run --baseline after accepting.",
+      "_replay": {
+        "replayable": false,
+        "commits": null,
+        "fired": null,
+        "followedByFixOrRevert": null,
+        "hitRatePct": null,
+        "baseRatePct": null
+      }
+    },
+    {
+      "id": "no-bind-this",
+      "type": "forbid-pattern",
+      "severity": "warn",
+      "paths": [
+        "src/vs/**/*.ts"
+      ],
+      "pattern": "\\.bind\\(this\\b",
+      "description": "Use an arrow function instead of .bind(this) to keep `this`.",
+      "fix": "() => this.method()",
+      "evidence": [
+        ".github/copilot-instructions.md:156"
+      ],
+      "_why": "Stated in VS Code's instructions.",
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "_replay": {
+        "replayable": true,
+        "commits": 483,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 23,
+        "head": "142f300f0459"
+      }
+    },
+    {
+      "id": "no-global-stub-in-tests",
+      "type": "forbid-pattern",
+      "severity": "warn",
+      "paths": [
+        "src/**/test/**/*.ts"
+      ],
+      "ignoreTests": false,
+      "pattern": "\\((mainWindow|window|globalThis)\\s+as\\s+any\\)\\.",
+      "description": "Tests do not stub a global object through an any cast; the dependency is made injectable instead.",
+      "fix": "Add an optional constructor parameter that defaults to the real implementation and pass a fake in the test.",
+      "evidence": [
+        ".github/copilot-instructions.md:162"
+      ],
+      "_why": "Stated in VS Code's learnings.",
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "_replay": {
+        "replayable": true,
+        "commits": 483,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 23,
+        "head": "142f300f0459"
+      }
+    },
+    {
+      "id": "top-level-export-function",
+      "type": "forbid-pattern",
+      "severity": "warn",
+      "paths": [
+        "src/vs/**/*.ts"
+      ],
+      "pattern": "^export const \\w+ = (async )?\\([^)]*\\)\\s*(:\\s*[^=]+)?=>",
+      "description": "At the top level, write export function name() rather than an exported arrow function.",
+      "fix": "export function name(...) { ... }",
+      "evidence": [
+        ".github/copilot-instructions.md:135"
+      ],
+      "_why": "Named functions read better in stack traces.",
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "_replay": {
+        "replayable": true,
+        "commits": 483,
+        "fired": 0,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": null,
+        "baseRatePct": 23,
+        "head": "142f300f0459"
+      }
+    },
+    {
+      "id": "lockfile-with-package-json",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "package.json",
+      "require": "package-lock.json",
+      "description": "A change to the root package.json comes with package-lock.json.",
+      "fix": "npm install, then commit package-lock.json.",
+      "evidence": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "_why": "A dependency change without its lockfile installs something different in CI. A warning, not a block: on 8 of 483 merged commits the root package.json changed without the lockfile (scripts or metadata, not dependencies).",
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "_replay": {
+        "replayable": true,
+        "commits": 483,
+        "fired": 8,
+        "followedByFixOrRevert": 1,
+        "hitRatePct": 12,
+        "baseRatePct": 23,
+        "head": "142f300f0459",
+        "examples": [
+          {
+            "sha": "46bbfc5fed64",
+            "date": "2026-10-26",
+            "subject": "sessions: apply a consistent context menu structure in the Agents window (#344296)",
+            "outcome": "fixed"
+          },
+          {
+            "sha": "fbdb23c9c630",
+            "date": "2026-10-24",
+            "subject": "Offer the Markdown editor as a scratchpad for plain text files",
+            "outcome": null
+          },
+          {
+            "sha": "8b86ea560f44",
+            "date": "2026-10-27",
+            "subject": "mcp: apply schema to user configuration files (#344640)",
+            "outcome": null
+          },
+          {
+            "sha": "403b47d69848",
+            "date": "2026-10-27",
+            "subject": "Remove dedicated workspace generation flows (#344458)",
+            "outcome": null
+          },
+          {
+            "sha": "64eb29032145",
+            "date": "2026-10-28",
+            "subject": "Add record-video skill behind experimental setting",
+            "outcome": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "proposed-api-registered",
+      "type": "co-change",
+      "severity": "warn",
+      "when": "src/vscode-dts/vscode.proposed.*.d.ts",
+      "require": "src/vs/platform/extensions/common/extensionsApiProposals.ts",
+      "description": "A proposed API file (vscode.proposed.*.d.ts) changes together with the proposals registry, extensionsApiProposals.ts.",
+      "fix": "Update the version or entry in extensionsApiProposals.ts (npm run gulp compile-extensions-build regenerates it).",
+      "evidence": [
+        "src/vs/platform/extensions/common/extensionsApiProposals.ts"
+      ],
+      "_why": "The registry lists every proposed API and its version; a change to one without the other breaks extensions that use it. A warning, not a block: 4 of 483 merged commits edited a proposed API file without the registry (comments and docs).",
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "_replay": {
+        "replayable": true,
+        "commits": 483,
+        "fired": 4,
+        "followedByFixOrRevert": 0,
+        "hitRatePct": 0,
+        "baseRatePct": 23,
+        "head": "142f300f0459",
+        "examples": [
+          {
+            "sha": "a37976647498",
+            "date": "2026-10-27",
+            "subject": "Make Timeline API label optional and derive from resourceURI (#344596)",
+            "outcome": null
+          },
+          {
+            "sha": "656556c1b964",
+            "date": "2026-10-28",
+            "subject": "workspace: Use canonical URIs for virtual workspace trust (#344644)",
+            "outcome": null
+          },
+          {
+            "sha": "4ee2f856fed2",
+            "date": "2026-10-29",
+            "subject": "artifacts: let extension integrations add actions to list items (#344976)",
+            "outcome": null
+          },
+          {
+            "sha": "f88c99ac4ea7",
+            "date": "2026-10-30",
+            "subject": "sessions: let artifact integrations opt into their own pills with a group ID (#345165)",
+            "outcome": null
+          }
+        ]
+      }
+    }
+  ]
+}

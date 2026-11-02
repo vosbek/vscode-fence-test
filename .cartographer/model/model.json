@@ -1,0 +1,2098 @@
+{
+  "schemaVersion": 1,
+  "repo": {
+    "name": "vscode (fork: vosbek/vscode-fence-test)",
+    "summary": "Visual Studio Code: a layered TypeScript codebase (base, platform, editor, workbench) built for Electron, the web and a remote server, with built-in extensions in the extension host. This map covers the whole repository at layer level and the area of one change in detail: CSS color parsing and its callers."
+  },
+  "generated": {
+    "at": "2026-10-30T15:25:09Z",
+    "commit": "9019233f1961",
+    "branch": "factory/onboard",
+    "by": "cartograph-survey (focused)"
+  },
+  "layers": [
+    {
+      "id": "tooling",
+      "name": "Build, tests and lint rules",
+      "description": "The gulp and Node build, the test runners and the repository's own ESLint plugin that enforces the layering below. Tools may read any layer; product code never imports them."
+    },
+    {
+      "id": "entry",
+      "name": "Entry points",
+      "description": "Processes that start VS Code: the Electron main process and CLI (src/vs/code), the remote server (src/vs/server), and the Agents window (src/vs/sessions), which may use the workbench but not the other way round."
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "description": "The application shell, services and every feature (contrib), plus the extension host API. May import editor, platform and base."
+    },
+    {
+      "id": "editor",
+      "name": "Editor",
+      "description": "The Monaco text editor: model, view, DOM and GPU renderers, editor contributions. May import platform and base."
+    },
+    {
+      "id": "platform",
+      "name": "Platform",
+      "description": "Services with dependency injection: theme, windows, files, configuration, storage. May import base only."
+    },
+    {
+      "id": "base",
+      "name": "Base",
+      "description": "General utilities with no VS Code concepts: data structures, strings, colors, DOM helpers. Imports nothing above it."
+    },
+    {
+      "id": "external",
+      "name": "Outside src/vs",
+      "description": "Built-in extensions run in the extension host and reach the core only through the vscode API."
+    }
+  ],
+  "components": [
+    {
+      "id": "code",
+      "name": "Electron main and CLI (src/vs/code)",
+      "layer": "entry",
+      "kind": "service",
+      "paths": [
+        "src/vs/code"
+      ],
+      "summary": "Starts the Electron main process and the CLI, then opens windows through platform services.",
+      "evidence": [
+        {
+          "path": "src/vs/code/electron-main/main.ts",
+          "line": 92,
+          "expect": "class CodeMain"
+        }
+      ]
+    },
+    {
+      "id": "server",
+      "name": "Remote server (src/vs/server)",
+      "layer": "entry",
+      "kind": "service",
+      "paths": [
+        "src/vs/server"
+      ],
+      "summary": "The server for remote development and the web: hosts the extension host and serves the workbench.",
+      "evidence": [
+        {
+          "path": "src/vs/server/node/server.main.ts",
+          "line": 64,
+          "expect": "export"
+        }
+      ]
+    },
+    {
+      "id": "sessions",
+      "name": "Agents window (src/vs/sessions)",
+      "layer": "entry",
+      "kind": "ui",
+      "paths": [
+        "src/vs/sessions"
+      ],
+      "summary": "A dedicated window for agent sessions; sits alongside the workbench and may import it, never the reverse.",
+      "evidence": [
+        {
+          "path": ".github/copilot-instructions.md",
+          "line": 27,
+          "expect": "src/vs/sessions/"
+        }
+      ]
+    },
+    {
+      "id": "workbench-api",
+      "name": "Extension host API (workbench/api)",
+      "layer": "workbench",
+      "kind": "adapter",
+      "paths": [
+        "src/vs/workbench/api"
+      ],
+      "summary": "Implements the vscode API that extensions call, on both sides of the extension host boundary.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/common/extHost.api.impl.ts",
+          "line": 152,
+          "expect": "export function createApiFactoryAndRegisterActors"
+        }
+      ]
+    },
+    {
+      "id": "chat-input",
+      "name": "Chat input (contrib/chat/browser/widget/input)",
+      "layer": "workbench",
+      "kind": "ui",
+      "paths": [
+        "src/vs/workbench/contrib/chat/browser/widget/input"
+      ],
+      "summary": "The Copilot chat box: the input editor, attachments, pickers and the execute toolbar whose buttons come from the ChatExecute menu.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 3689,
+          "expect": "dom.h('.chat-input-toolbars@inputToolbars')"
+        },
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 4309,
+          "expect": "this.executeToolbar.getElement().classList.add('chat-execute-toolbar');"
+        }
+      ]
+    },
+    {
+      "id": "chat-actions",
+      "name": "Chat actions (contrib/chat/browser/actions)",
+      "layer": "workbench",
+      "kind": "module",
+      "paths": [
+        "src/vs/workbench/contrib/chat/browser/actions"
+      ],
+      "summary": "Action2 classes for chat: submit, cancel, pickers, new chat. Each declares the menus it appears in and the context keys that show it.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts",
+          "line": 1200,
+          "expect": "export function registerChatExecuteActions(): DisposableStore {"
+        }
+      ]
+    },
+    {
+      "id": "workbench-contrib",
+      "name": "Workbench features (workbench/contrib)",
+      "layer": "workbench",
+      "kind": "module",
+      "paths": [
+        "src/vs/workbench/contrib"
+      ],
+      "summary": "Every feature: chat, terminal, debug, search, SCM, notebooks and about a hundred more, each a folder of contributions.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/workbench.common.main.ts",
+          "line": 212,
+          "expect": "'./contrib/"
+        }
+      ]
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench shell and services",
+      "layer": "workbench",
+      "kind": "ui",
+      "paths": [
+        "src/vs/workbench"
+      ],
+      "summary": "Layout, parts, editors, the workbench's own services and the main entry files that load every contribution.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/browser/workbench.ts",
+          "line": 66,
+          "expect": "export class Workbench"
+        }
+      ]
+    },
+    {
+      "id": "editor-gpu",
+      "name": "Editor GPU renderer (editor/browser/gpu)",
+      "layer": "editor",
+      "kind": "module",
+      "paths": [
+        "src/vs/editor/browser/gpu"
+      ],
+      "summary": "Draws editor text with WebGPU. Decides per line whether it can render a decoration's CSS; anything it cannot is meant to fall back to the DOM renderer.",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/gpu/viewGpuContext.ts",
+          "line": 31,
+          "expect": "export class ViewGpuContext"
+        }
+      ],
+      "snippets": [
+        "gpu-can-render-color"
+      ]
+    },
+    {
+      "id": "editor",
+      "name": "Editor (Monaco)",
+      "layer": "editor",
+      "kind": "module",
+      "paths": [
+        "src/vs/editor"
+      ],
+      "summary": "The text model, view model, DOM view, standalone Monaco build and editor contributions.",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/widget/codeEditor/codeEditorWidget.ts",
+          "line": 70,
+          "expect": "export class CodeEditorWidget"
+        }
+      ]
+    },
+    {
+      "id": "platform-theme",
+      "name": "Theme service (platform/theme)",
+      "layer": "platform",
+      "kind": "service",
+      "paths": [
+        "src/vs/platform/theme"
+      ],
+      "summary": "Color registry and theme service: every themable color is registered here and resolved to a Color.",
+      "evidence": [
+        {
+          "path": "src/vs/platform/theme/common/colorRegistry.ts",
+          "line": 6,
+          "expect": "export"
+        }
+      ]
+    },
+    {
+      "id": "platform-windows",
+      "name": "Windows (platform/windows)",
+      "layer": "platform",
+      "kind": "service",
+      "paths": [
+        "src/vs/platform/windows"
+      ],
+      "summary": "Creates and manages Electron windows in the main process, including title bar overlay colors.",
+      "evidence": [
+        {
+          "path": "src/vs/platform/windows/electron-main/windowImpl.ts",
+          "line": 667,
+          "expect": "export class CodeWindow"
+        }
+      ],
+      "snippets": [
+        "window-dim-color"
+      ]
+    },
+    {
+      "id": "platform",
+      "name": "Platform services",
+      "layer": "platform",
+      "kind": "library",
+      "paths": [
+        "src/vs/platform"
+      ],
+      "summary": "About 100 services (files, configuration, storage, instantiation, log, agent host) shared by every process.",
+      "evidence": [
+        {
+          "path": "src/vs/platform/instantiation/common/instantiation.ts",
+          "line": 41,
+          "expect": "export const IInstantiationService"
+        }
+      ]
+    },
+    {
+      "id": "base-color",
+      "name": "Color (base/common/color.ts)",
+      "layer": "base",
+      "kind": "library",
+      "paths": [
+        "src/vs/base/common/color.ts",
+        "src/vs/base/test/common/color.test.ts"
+      ],
+      "summary": "RGBA, HSLA, HSVA and Color, plus Color.Format.CSS: format and parse CSS color strings. 160 files import it.",
+      "evidence": [
+        {
+          "path": "src/vs/base/common/color.ts",
+          "line": 670,
+          "expect": "export function parse(css: string): Color | null"
+        }
+      ],
+      "snippets": [
+        "css-parse"
+      ]
+    },
+    {
+      "id": "base",
+      "name": "Base utilities",
+      "layer": "base",
+      "kind": "library",
+      "paths": [
+        "src/vs/base"
+      ],
+      "summary": "Lifecycle and disposables, events, async, strings, arrays, DOM helpers, the UI widgets in base/browser/ui.",
+      "evidence": [
+        {
+          "path": "src/vs/base/common/lifecycle.ts",
+          "line": 416,
+          "expect": "export class DisposableStore"
+        }
+      ]
+    },
+    {
+      "id": "factory",
+      "name": "Software factory tooling (.cartographer, .fence, verification)",
+      "layer": "tooling",
+      "kind": "config",
+      "paths": [
+        ".cartographer",
+        ".fence",
+        "verification",
+        ".agents/skills/factory-onboard",
+        ".agents/skills/tend-fence",
+        ".agents/skills/formal-models",
+        ".agents/skills/second-review"
+      ],
+      "summary": "The codebase map and its guard rules, the fence and its configuration, and the TLA+ model of the gardener. People own the rules and the fence configuration (CODEOWNERS).",
+      "evidence": [
+        {
+          "path": ".fence/fence.json",
+          "line": 3,
+          "expect": "large repository"
+        }
+      ]
+    },
+    {
+      "id": "component-fixtures",
+      "name": "Component fixtures (UI rendered in a browser)",
+      "layer": "tooling",
+      "kind": "test",
+      "paths": [
+        "src/vs/workbench/test/browser/componentFixtures",
+        "test/componentFixtures"
+      ],
+      "summary": "Renders real workbench components with mocked services in the component explorer, for screenshots and Playwright checks. The chat input fixture adds its own toolbar items.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/renderChatInput.ts",
+          "line": 293,
+          "expect": "menuService.addItem(MenuId.ChatExecute"
+        }
+      ]
+    },
+    {
+      "id": "lint-rules",
+      "name": "Repository lint rules (.eslint-plugin-local)",
+      "layer": "tooling",
+      "kind": "config",
+      "paths": [
+        ".eslint-plugin-local",
+        "eslint.config.js"
+      ],
+      "summary": "VS Code's own ESLint rules. code-layering and code-import-patterns already encode the layering this map shows; they are configured as warnings, and build/eslint.ts fails on any warning or error.",
+      "evidence": [
+        {
+          "path": "eslint.config.js",
+          "line": 117,
+          "expect": "'local/code-layering'"
+        },
+        {
+          "path": "eslint.config.js",
+          "line": 1773,
+          "expect": "'target': 'src/vs/base/~'"
+        },
+        {
+          "path": "build/eslint.ts",
+          "line": 104,
+          "expect": "if (warningCount > 0 || errorCount > 0) {"
+        }
+      ]
+    },
+    {
+      "id": "build",
+      "name": "Build (build/)",
+      "layer": "tooling",
+      "kind": "job",
+      "paths": [
+        "build"
+      ],
+      "summary": "gulp and Node scripts: compile, package, hygiene, the layers checker and the ESLint wrapper.",
+      "evidence": [
+        {
+          "path": "package.json",
+          "line": 72,
+          "expect": "\"valid-layers-check\""
+        }
+      ]
+    },
+    {
+      "id": "test-infra",
+      "name": "Test runners (test/, scripts/)",
+      "layer": "tooling",
+      "kind": "test",
+      "paths": [
+        "test",
+        "scripts"
+      ],
+      "summary": "Unit test runners for Electron, Node and browsers, integration and smoke tests.",
+      "evidence": [
+        {
+          "path": "package.json",
+          "line": 16,
+          "expect": "\"test-node\""
+        }
+      ]
+    },
+    {
+      "id": "extensions",
+      "name": "Built-in extensions (extensions/)",
+      "layer": "external",
+      "kind": "external",
+      "paths": [
+        "extensions"
+      ],
+      "summary": "Language support, Git, Copilot and others; each runs in the extension host and uses only the vscode API."
+    }
+  ],
+  "edges": [
+    {
+      "from": "platform-windows",
+      "to": "base-color",
+      "kind": "calls",
+      "label": "dimColor: parse a title bar color, return it unchanged when parse gives null",
+      "evidence": [
+        {
+          "path": "src/vs/platform/windows/electron-main/windowImpl.ts",
+          "line": 537,
+          "expect": "const parsed = Color.Format.CSS.parse(color);"
+        }
+      ]
+    },
+    {
+      "from": "editor-gpu",
+      "to": "base-color",
+      "kind": "calls",
+      "label": "canRender: Color.Format.CSS.parse(value) !== null decides GPU or DOM",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/gpu/viewGpuContext.ts",
+          "line": 311,
+          "expect": "return Color.Format.CSS.parse(value) !== null;"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "base",
+      "kind": "depends",
+      "label": "16529 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/accessibility/browser/accessibilityConfiguration.ts",
+          "line": 13,
+          "expect": "../../../../base/common/lifecycle.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "platform",
+      "kind": "depends",
+      "label": "14797 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/accessibility/browser/accessibility.contribution.ts",
+          "line": 6,
+          "expect": "../../../../platform/instantiation/common/extensions.js"
+        }
+      ]
+    },
+    {
+      "from": "platform",
+      "to": "base",
+      "kind": "depends",
+      "label": "7335 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/accessibility/browser/accessibilityService.ts",
+          "line": 6,
+          "expect": "../../../base/browser/dom.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "base",
+      "kind": "depends",
+      "label": "5540 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/browser/accountTitleBarState.ts",
+          "line": 6,
+          "expect": "../../base/common/codicons.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "platform",
+      "kind": "depends",
+      "label": "5273 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/browser/accountTitleBarState.ts",
+          "line": 12,
+          "expect": "../../platform/defaultAccount/common/defaultAccount.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "4776 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/accessibility/browser/accessibility.contribution.ts",
+          "line": 8,
+          "expect": "../../../common/contributions.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "platform",
+      "kind": "depends",
+      "label": "4715 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/browser/actions/developerActions.ts",
+          "line": 9,
+          "expect": "../../../platform/keybinding/common/keybinding.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "base",
+      "kind": "depends",
+      "label": "4531 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/browser/actions/developerActions.ts",
+          "line": 10,
+          "expect": "../../../base/browser/event.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "editor",
+      "kind": "depends",
+      "label": "2964 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/accessibility/browser/accessibleView.ts",
+          "line": 19,
+          "expect": "../../../../editor/browser/config/editorConfiguration.js"
+        }
+      ]
+    },
+    {
+      "from": "editor",
+      "to": "base",
+      "kind": "depends",
+      "label": "2334 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/config/domFontInfo.ts",
+          "line": 6,
+          "expect": "../../../base/browser/fastDomNode.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "1839 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts",
+          "line": 9,
+          "expect": "../../../../workbench/contrib/chat/browser/chatStatus/media/chatStatus.css"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "1602 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/browser/accountTitleBarState.ts",
+          "line": 11,
+          "expect": "../../workbench/services/chat/common/chatEntitlementService.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "base",
+      "kind": "depends",
+      "label": "1549 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/mainThreadAgentEditorComments.ts",
+          "line": 6,
+          "expect": "../../../base/common/lifecycle.js"
+        }
+      ]
+    },
+    {
+      "from": "editor",
+      "to": "platform",
+      "kind": "depends",
+      "label": "1047 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/config/editorConfiguration.ts",
+          "line": 22,
+          "expect": "../../../platform/accessibility/common/accessibility.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "platform",
+      "kind": "depends",
+      "label": "859 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/extensionHost.contribution.ts",
+          "line": 7,
+          "expect": "../../../platform/instantiation/common/instantiation.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "740 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/workbench.common.main.ts",
+          "line": 212,
+          "expect": "./contrib/telemetry/browser/telemetry.contribution.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "644 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/agentsVoice/browser/agentsVoiceWindowService.ts",
+          "line": 29,
+          "expect": "../../../../platform/theme/common/themeService.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "635 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/extensionHost.contribution.ts",
+          "line": 6,
+          "expect": "../../common/contributions.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "editor",
+      "kind": "depends",
+      "label": "633 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/browser/actions/windowActions.ts",
+          "line": 19,
+          "expect": "../../../editor/common/services/model.js"
+        }
+      ]
+    },
+    {
+      "from": "code",
+      "to": "platform",
+      "kind": "depends",
+      "label": "406 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/code/browser/workbench/workbench.ts",
+          "line": 18,
+          "expect": "../../../platform/product/common/product.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "371 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/extensionHost.contribution.ts",
+          "line": 14,
+          "expect": "../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "editor",
+      "kind": "depends",
+      "label": "261 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/mainThreadAgentEditorComments.ts",
+          "line": 9,
+          "expect": "../../../editor/common/core/range.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "editor",
+      "kind": "depends",
+      "label": "256 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/browser/actions/vscodeActions.ts",
+          "line": 9,
+          "expect": "../../../editor/browser/editorExtensions.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "233 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/browser/actions/layoutActions.ts",
+          "line": 29,
+          "expect": "../../../platform/theme/common/iconRegistry.js"
+        }
+      ]
+    },
+    {
+      "from": "server",
+      "to": "platform",
+      "kind": "depends",
+      "label": "207 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/server/node/agentHostChannel.ts",
+          "line": 20,
+          "expect": "../../platform/agentHost/common/agentService.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "191 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/browser/layoutActions.ts",
+          "line": 16,
+          "expect": "../../platform/theme/common/iconRegistry.js"
+        }
+      ]
+    },
+    {
+      "from": "editor",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "161 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/editorDom.ts",
+          "line": 13,
+          "expect": "../../platform/theme/common/colorRegistry.js"
+        }
+      ]
+    },
+    {
+      "from": "server",
+      "to": "base",
+      "kind": "depends",
+      "label": "160 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/server/node/agentHostChannel.ts",
+          "line": 15,
+          "expect": "../../base/common/event.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "155 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/mainThreadTerminalService.ts",
+          "line": 21,
+          "expect": "vscode"
+        }
+      ]
+    },
+    {
+      "from": "code",
+      "to": "base",
+      "kind": "depends",
+      "label": "151 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/code/browser/workbench/workbench.ts",
+          "line": 6,
+          "expect": "../../../base/browser/browser.js"
+        }
+      ]
+    },
+    {
+      "from": "platform-windows",
+      "to": "platform",
+      "kind": "depends",
+      "label": "96 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/windows/electron-main/agentsWindow.ts",
+          "line": 8,
+          "expect": "../../environment/common/argv.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "sessions",
+      "kind": "depends",
+      "label": "94 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/chatProgressContentPart.fixture.ts",
+          "line": 39,
+          "expect": "../../../../../sessions/browser/media/style.css"
+        }
+      ]
+    },
+    {
+      "from": "platform-windows",
+      "to": "base",
+      "kind": "depends",
+      "label": "62 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/windows/electron-main/agentsWindow.ts",
+          "line": 6,
+          "expect": "../../../base/common/cancellation.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "54 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/callHierarchy/browser/callHierarchyPeek.ts",
+          "line": 30,
+          "expect": "../../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "platform-theme",
+      "to": "base",
+      "kind": "depends",
+      "label": "50 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/theme/browser/defaultStyles.ts",
+          "line": 5,
+          "expect": "../../../base/browser/ui/button/button.js"
+        }
+      ]
+    },
+    {
+      "from": "editor-gpu",
+      "to": "base",
+      "kind": "depends",
+      "label": "47 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/gpu/atlas/atlas.ts",
+          "line": 6,
+          "expect": "../../../../base/common/map.js"
+        }
+      ]
+    },
+    {
+      "from": "editor",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "40 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/controller/editContext/textArea/textAreaEditContext.ts",
+          "line": 34,
+          "expect": "../../../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "editor-gpu",
+      "to": "editor",
+      "kind": "depends",
+      "label": "39 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/gpu/atlas/textureAtlas.ts",
+          "line": 14,
+          "expect": "../../../common/encodedTokenAttributes.js"
+        }
+      ]
+    },
+    {
+      "from": "platform",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "38 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/actionWidget/browser/actionList.ts",
+          "line": 41,
+          "expect": "../../theme/browser/defaultStyles.js"
+        }
+      ]
+    },
+    {
+      "from": "editor",
+      "to": "editor-gpu",
+      "kind": "depends",
+      "label": "36 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/view.ts",
+          "line": 59,
+          "expect": "./gpu/viewGpuContext.js"
+        }
+      ]
+    },
+    {
+      "from": "platform",
+      "to": "platform-windows",
+      "kind": "depends",
+      "label": "25 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/auxiliaryWindow/electron-main/auxiliaryWindow.ts",
+          "line": 16,
+          "expect": "../../windows/electron-main/windowImpl.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "25 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/services/search/node/ripgrepTextSearchEngine.ts",
+          "line": 19,
+          "expect": "vscode-regexpp"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "23 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/browser/actions/developerActions.ts",
+          "line": 11,
+          "expect": "../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "platform-theme",
+      "to": "platform",
+      "kind": "depends",
+      "label": "20 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/theme/common/colorUtils.ts",
+          "line": 11,
+          "expect": "../../jsonschemas/common/jsonContributionRegistry.js"
+        }
+      ]
+    },
+    {
+      "from": "extensions",
+      "to": "test-infra",
+      "kind": "depends",
+      "label": "16 file imports",
+      "evidence": [
+        {
+          "path": "extensions/typescript-language-features/src/test-all.ts",
+          "line": 18,
+          "expect": "../../../test/integration/electron/testrunner"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "16 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/browser/parts/chatGroupsView.ts",
+          "line": 8,
+          "expect": "../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "platform-theme",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "13 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/theme/browser/defaultStyles.ts",
+          "line": 17,
+          "expect": "../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "10 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/mainThreadComments.ts",
+          "line": 23,
+          "expect": "../../../platform/theme/common/iconRegistry.js"
+        }
+      ]
+    },
+    {
+      "from": "test-infra",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "7 file imports",
+      "evidence": [
+        {
+          "path": "scripts/sync-agent-host-protocol.ts",
+          "line": 29,
+          "expect": "typescript"
+        }
+      ]
+    },
+    {
+      "from": "base",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "7 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/base/browser/cssValue.ts",
+          "line": 5,
+          "expect": "../common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "editor-gpu",
+      "to": "platform",
+      "kind": "depends",
+      "label": "7 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/gpu/atlas/textureAtlas.ts",
+          "line": 12,
+          "expect": "../../../../platform/instantiation/common/instantiation.js"
+        }
+      ]
+    },
+    {
+      "from": "server",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "7 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/server/node/extensionHostConnection.ts",
+          "line": 23,
+          "expect": "../../workbench/services/extensions/common/extensionHostEnv.js"
+        }
+      ]
+    },
+    {
+      "from": "code",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "6 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/code/electron-browser/workbench/partsSplash.ts",
+          "line": 6,
+          "expect": "../../../platform/theme/common/themeService.js"
+        }
+      ]
+    },
+    {
+      "from": "code",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "5 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/code/browser/workbench/workbench.ts",
+          "line": 21,
+          "expect": "../../../workbench/browser/web.api.js"
+        }
+      ]
+    },
+    {
+      "from": "code",
+      "to": "platform-windows",
+      "kind": "depends",
+      "label": "4 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/code/electron-main/app.ts",
+          "line": 104,
+          "expect": "../../platform/windows/electron-main/windows.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "4 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/codeEditor/browser/inspectEditorTokens/inspectEditorTokens.ts",
+          "line": 25,
+          "expect": "vscode-textmate"
+        }
+      ]
+    },
+    {
+      "from": "editor-gpu",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "3 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/gpu/atlas/textureAtlas.ts",
+          "line": 13,
+          "expect": "../../../../platform/theme/common/themeService.js"
+        }
+      ]
+    },
+    {
+      "from": "editor-gpu",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "3 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/browser/gpu/renderStrategy/fullFileRenderStrategy.ts",
+          "line": 7,
+          "expect": "../../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "editor",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "3 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/editor/test/browser/controller/cursor.test.ts",
+          "line": 980,
+          "expect": "var gulp = require(\"gulp\");"
+        }
+      ]
+    },
+    {
+      "from": "platform",
+      "to": "editor",
+      "kind": "depends",
+      "label": "3 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/agentHost/node/diffWorkerMain.ts",
+          "line": 9,
+          "expect": "../../../editor/common/diff/defaultLinesDiffComputer/defaultLinesDiffComputer.js"
+        }
+      ]
+    },
+    {
+      "from": "platform-windows",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "3 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/windows/electron-main/windowImpl.ts",
+          "line": 35,
+          "expect": "../../theme/electron-main/themeMainService.js"
+        }
+      ]
+    },
+    {
+      "from": "server",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "3 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/server/node/remoteTerminalChannel.ts",
+          "line": 26,
+          "expect": "../../workbench/contrib/terminal/common/remote/terminal.js"
+        }
+      ]
+    },
+    {
+      "from": "lint-rules",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": ".eslint-plugin-local/code-no-bracket-notation-for-identifiers.ts",
+          "line": 9,
+          "expect": "typescript"
+        }
+      ]
+    },
+    {
+      "from": "lint-rules",
+      "to": "base",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": ".eslint-plugin-local/tests/code-no-observable-get-in-reactive-context-test.ts",
+          "line": 8,
+          "expect": "../../src/vs/base/common/observable.js"
+        }
+      ]
+    },
+    {
+      "from": "base-color",
+      "to": "base",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/base/common/color.ts",
+          "line": 6,
+          "expect": "./charCode.js"
+        }
+      ]
+    },
+    {
+      "from": "platform-windows",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/windows/electron-main/windowImpl.ts",
+          "line": 50,
+          "expect": "../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "server",
+      "to": "workbench-api",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/server/node/remoteTerminalChannel.ts",
+          "line": 22,
+          "expect": "../../workbench/api/node/extHostCLIServer.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "sessions",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/agentSessions/agentHost/agentHostCustomizationService.ts",
+          "line": 44,
+          "expect": "../../../../../../sessions/common/agentHostSessionsProvider.js"
+        }
+      ]
+    },
+    {
+      "from": "base",
+      "to": "platform",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/base/test/browser/actionbar.test.ts",
+          "line": 171,
+          "expect": "../../../platform/quickinput/browser/quickInputUtils.js"
+        }
+      ]
+    },
+    {
+      "from": "platform-theme",
+      "to": "platform-windows",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/platform/theme/electron-main/themeMainServiceImpl.ts",
+          "line": 17,
+          "expect": "../../windows/electron-main/windows.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/test/e2e/extensions/sessions-e2e-mock/extension.js",
+          "line": 26,
+          "expect": "vscode"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/mainThreadLanguages.ts",
+          "line": 15,
+          "expect": "../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "test-infra",
+      "to": "platform",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "test/integration/agentHost/runner.ts",
+          "line": 99,
+          "expect": "../../../src/vs/platform/agentHost/test/node/agentHostTestProfile.ts"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "501 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 22,
+          "expect": "../../../contrib/modernUI/browser/media/activityBar.css"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "base",
+      "kind": "depends",
+      "label": "492 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 6,
+          "expect": "../../../../base/browser/dom.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "platform",
+      "kind": "depends",
+      "label": "447 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/agentsVoice/voiceModeOnboarding.fixture.ts",
+          "line": 8,
+          "expect": "../../../../../platform/contextview/browser/contextView.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "base",
+      "kind": "depends",
+      "label": "383 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatFollowups.ts",
+          "line": 6,
+          "expect": "../../../../../../base/browser/dom.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "295 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts",
+          "line": 15,
+          "expect": "../chat.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "platform",
+      "kind": "depends",
+      "label": "267 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts",
+          "line": 9,
+          "expect": "../../../../../platform/actions/common/actions.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "platform",
+      "kind": "depends",
+      "label": "256 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.ts",
+          "line": 7,
+          "expect": "../../../../../../platform/instantiation/common/extensions.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "254 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatFollowups.ts",
+          "line": 11,
+          "expect": "../../../common/participants/chatAgents.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "196 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts",
+          "line": 27,
+          "expect": "../../chat/browser/widget/input/chatInputOnboarding.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "base",
+      "kind": "depends",
+      "label": "187 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts",
+          "line": 6,
+          "expect": "../../../../../base/common/lifecycle.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "editor",
+      "kind": "depends",
+      "label": "176 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/aiStats.fixture.ts",
+          "line": 9,
+          "expect": "../../../../editor/test/common/core/random.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "171 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 15,
+          "expect": "../../../browser/parts/activitybar/activitybarPart.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "154 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution.ts",
+          "line": 54,
+          "expect": "../../chat/browser/actions/configureVoiceInstructionsAction.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "editor",
+      "kind": "depends",
+      "label": "96 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 42,
+          "expect": "../../../../../../editor/browser/config/editorConfiguration.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "sessions",
+      "kind": "depends",
+      "label": "94 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/chatProgressContentPart.fixture.ts",
+          "line": 39,
+          "expect": "../../../../../sessions/browser/media/style.css"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "66 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/contrib/automations/browser/automationDialog.ts",
+          "line": 73,
+          "expect": "../../../../workbench/contrib/chat/browser/widget/input/chatInputPart.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "66 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityHelp.ts",
+          "line": 20,
+          "expect": "../../../../services/agentHost/browser/codexContinuationService.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "component-fixtures",
+      "kind": "depends",
+      "label": "58 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/contrib/agentFeedback/test/browser/agentFeedbackEditorOverlayWidget.fixture.ts",
+          "line": 10,
+          "expect": "../../../../../workbench/test/browser/componentFixtures/fixtureUtils.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "editor",
+      "kind": "depends",
+      "label": "51 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityHelp.ts",
+          "line": 7,
+          "expect": "../../../../../editor/browser/editorBrowser.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "38 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 14,
+          "expect": "../../../../platform/theme/browser/defaultStyles.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "37 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 37,
+          "expect": "../../../../../services/remote/common/remoteAgentService.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "28 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts",
+          "line": 55,
+          "expect": "../../../../workbench/contrib/chat/browser/actions/chatActions.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "26 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/agentsVoice/voiceModeOnboarding.fixture.ts",
+          "line": 11,
+          "expect": "../../../../contrib/chat/browser/widget/input/chatInputStack.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "16 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/fixtureSyntaxHighlighting.ts",
+          "line": 21,
+          "expect": "vscode-oniguruma"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "14 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationWidget.ts",
+          "line": 26,
+          "expect": "../../../../../../platform/theme/browser/defaultStyles.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "11 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 124,
+          "expect": "../../actions/chatExecuteActions.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "4 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatActions.ts",
+          "line": 53,
+          "expect": "../widget/input/chatInputNoticeHub.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/mainThreadChatInputNotification.ts",
+          "line": 7,
+          "expect": "../../contrib/chat/browser/widget/input/chatInputNotificationService.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "component-fixtures",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/electron-browser/componentFixtures/fixtureSyntaxHighlighting.test.ts",
+          "line": 22,
+          "expect": "../../browser/componentFixtures/fixtureResourceLoader.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/modelPicker/modelPickerColors.ts",
+          "line": 6,
+          "expect": "../../../../../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/chatAgentLifecycle.fixture.ts",
+          "line": 33,
+          "expect": "../../../../contrib/chat/browser/actions/chatToolActions.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/fixtureSyntaxHighlighting.ts",
+          "line": 7,
+          "expect": "../../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/workbench.web.main.ts",
+          "line": 109,
+          "expect": "./contrib/chat/browser/actions/exportAgentHostDebugLogsAction.js"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "decoration-color-to-gpu",
+      "name": "A decoration's CSS color: GPU renderer or DOM fallback",
+      "trigger": "An extension or feature adds an inline decoration whose CSS class sets color or text-decoration-color",
+      "summary": "The GPU renderer asks canRender for every style rule of the decoration. A color it cannot parse should make canRender return false so the line falls back to the DOM renderer; the render strategies then parse the same value again and treat null as a bug.",
+      "steps": [
+        {
+          "component": "editor-gpu",
+          "action": "canRender reads each style rule of the decoration's class.",
+          "evidence": {
+            "path": "src/vs/editor/browser/gpu/viewGpuContext.ts",
+            "line": 304,
+            "expect": "case 'text-decoration-color': {"
+          }
+        },
+        {
+          "component": "base-color",
+          "action": "Color.Format.CSS.parse(value): null means not supported, so the DOM renders the line.",
+          "evidence": {
+            "path": "src/vs/editor/browser/gpu/viewGpuContext.ts",
+            "line": 311,
+            "expect": "return Color.Format.CSS.parse(value) !== null;"
+          }
+        },
+        {
+          "component": "base-color",
+          "action": "For rgb( and rgba( that its pattern does not match, parse throws instead of returning null, so canRender throws.",
+          "evidence": {
+            "path": "src/vs/base/common/color.ts",
+            "line": 680,
+            "expect": "throw new Error('Invalid color format ' + css);"
+          }
+        },
+        {
+          "component": "editor-gpu",
+          "action": "The render strategies parse the value again; a null here is reported as a bug (the TODO says the check belongs in canRender).",
+          "evidence": {
+            "path": "src/vs/editor/browser/gpu/renderStrategy/fullFileRenderStrategy.ts",
+            "line": 410,
+            "expect": "throw new BugIndicatingError('Invalid color format ' + value);"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chat-execute-toolbar",
+      "name": "A chat input button: menu contribution to toolbar",
+      "trigger": "The chat input renders, or a context key it depends on changes (input has text, a request starts)",
+      "summary": "Buttons beside Send are not built by the chat input. An Action2 declares MenuId.ChatExecute with a when clause; the input's execute toolbar shows every item whose clause holds and runs the action with the widget as context.",
+      "steps": [
+        {
+          "component": "chat-actions",
+          "action": "ChatSubmitAction declares the ChatExecute menu, order 4, shown when no request is active.",
+          "evidence": {
+            "path": "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts",
+            "line": 228,
+            "expect": "id: MenuId.ChatExecute,"
+          }
+        },
+        {
+          "component": "chat-input",
+          "action": "The input part builds its execute toolbar from the menu passed in options.",
+          "evidence": {
+            "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+            "line": 4309,
+            "expect": "this.executeToolbar.getElement().classList.add('chat-execute-toolbar');"
+          }
+        },
+        {
+          "component": "chat-input",
+          "action": "The input keeps chatInputHasText current, which when clauses can test.",
+          "evidence": {
+            "path": "src/vs/workbench/contrib/chat/common/actions/chatContextKeys.ts",
+            "line": 49,
+            "expect": "export const inputHasText"
+          }
+        },
+        {
+          "component": "component-fixtures",
+          "action": "The fixture adds the same menu items itself, so a new button needs a fixture line to be seen.",
+          "evidence": {
+            "path": "src/vs/workbench/test/browser/componentFixtures/chat/renderChatInput.ts",
+            "line": 300,
+            "expect": "menuService.addItem(MenuId.ChatExecute, { command: { id: 'workbench.action.chat.submit'"
+          }
+        }
+      ]
+    }
+  ],
+  "snippets": [
+    {
+      "id": "css-parse",
+      "title": "Color.Format.CSS.parse",
+      "kind": "core-logic",
+      "component": "base-color",
+      "path": "src/vs/base/common/color.ts",
+      "start": 670,
+      "end": 700,
+      "language": "typescript",
+      "code": "\t\t\texport function parse(css: string): Color | null {\n\t\t\t\tif (css === 'transparent') {\n\t\t\t\t\treturn Color.transparent;\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('#')) {\n\t\t\t\t\treturn parseHex(css);\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('rgba(')) {\n\t\t\t\t\tconst color = css.match(/rgba\\((?<r>(?:\\+|-)?\\d+), *(?<g>(?:\\+|-)?\\d+), *(?<b>(?:\\+|-)?\\d+), *(?<a>(?:\\+|-)?\\d+(\\.\\d+)?)\\)/);\n\t\t\t\t\tif (!color) {\n\t\t\t\t\t\tthrow new Error('Invalid color format ' + css);\n\t\t\t\t\t}\n\t\t\t\t\tconst r = parseInt(color.groups?.r ?? '0');\n\t\t\t\t\tconst g = parseInt(color.groups?.g ?? '0');\n\t\t\t\t\tconst b = parseInt(color.groups?.b ?? '0');\n\t\t\t\t\tconst a = parseFloat(color.groups?.a ?? '0');\n\t\t\t\t\treturn new Color(new RGBA(r, g, b, a));\n\t\t\t\t}\n\t\t\t\tif (css.startsWith('rgb(')) {\n\t\t\t\t\tconst color = css.match(/rgb\\((?<r>(?:\\+|-)?\\d+), *(?<g>(?:\\+|-)?\\d+), *(?<b>(?:\\+|-)?\\d+)\\)/);\n\t\t\t\t\tif (!color) {\n\t\t\t\t\t\tthrow new Error('Invalid color format ' + css);\n\t\t\t\t\t}\n\t\t\t\t\tconst r = parseInt(color.groups?.r ?? '0');\n\t\t\t\t\tconst g = parseInt(color.groups?.g ?? '0');\n\t\t\t\t\tconst b = parseInt(color.groups?.b ?? '0');\n\t\t\t\t\treturn new Color(new RGBA(r, g, b));\n\t\t\t\t}\n\t\t\t\t// TODO: Support more formats as needed\n\t\t\t\treturn parseNamedKeyword(css);\n\t\t\t}",
+      "why": "Declared Color | null, but throws for rgb()/rgba() its patterns do not match; callers expect null.",
+      "annotations": [
+        {
+          "line": 680,
+          "note": "Throws where the signature promises null."
+        },
+        {
+          "line": 691,
+          "note": "Same for rgb()."
+        }
+      ],
+      "pin": {
+        "commit": "9019233f1961",
+        "sha256": "da84a27a3b6d98c1"
+      }
+    },
+    {
+      "id": "gpu-can-render-color",
+      "title": "GPU canRender: color support test",
+      "kind": "integration",
+      "component": "editor-gpu",
+      "path": "src/vs/editor/browser/gpu/viewGpuContext.ts",
+      "start": 304,
+      "end": 312,
+      "language": "typescript",
+      "code": "\t\tcase 'text-decoration-color': {\n\t\t\tconst value = style.getPropertyValue(rule);\n\t\t\t// Support var(--something, initial/inherit) which falls back to currentcolor\n\t\t\tif (/^var\\(--[^,]+,\\s*(?:initial|inherit)\\)$/.test(value)) {\n\t\t\t\treturn true;\n\t\t\t}\n\t\t\t// Support parsed color values\n\t\t\treturn Color.Format.CSS.parse(value) !== null;\n\t\t}",
+      "why": "Relies on parse returning null to fall back to the DOM renderer.",
+      "annotations": [
+        {
+          "line": 311,
+          "note": "A throw here escapes canRender."
+        }
+      ],
+      "pin": {
+        "commit": "9019233f1961",
+        "sha256": "2d54090d37704cd2"
+      }
+    },
+    {
+      "id": "window-dim-color",
+      "title": "Title bar dimColor",
+      "kind": "integration",
+      "component": "platform-windows",
+      "path": "src/vs/platform/windows/electron-main/windowImpl.ts",
+      "start": 533,
+      "end": 541,
+      "language": "typescript",
+      "code": "\n\t\t// Blend a CSS color with black at 50% opacity to match the\n\t\t// dimming overlay of `rgba(0, 0, 0, 0.5)` used by modals.\n\n\t\tconst parsed = Color.Format.CSS.parse(color);\n\t\tif (!parsed) {\n\t\t\treturn color;\n\t\t}\n",
+      "why": "Returns the color unchanged when parse gives null.",
+      "annotations": [],
+      "pin": {
+        "commit": "9019233f1961",
+        "sha256": "57bc66e1a2be2bc9"
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "id": "layered-architecture",
+      "title": "Code depends downward: base, platform, editor, workbench",
+      "status": "documented",
+      "context": "Four million lines shared by the desktop app, the web build, the server and the standalone Monaco editor.",
+      "decision": "Each layer imports only the layers below it, and each environment (common, browser, node, electron-*) only the ones it may run in.",
+      "consequences": "Enforced by the repository's own lint rules code-import-patterns and code-layering (build/eslint.ts fails on any warning) and by npm run valid-layers-check. The fence runs the same lint rules on the files a change touches.",
+      "evidence": [
+        {
+          "path": ".github/copilot-instructions.md",
+          "line": 30,
+          "expect": "Layered architecture"
+        },
+        {
+          "path": "eslint.config.js",
+          "line": 117,
+          "expect": "'local/code-layering'"
+        }
+      ]
+    },
+    {
+      "id": "parse-returns-null",
+      "title": "Color.Format.CSS.parse returns null for what it cannot read",
+      "status": "documented",
+      "context": "Callers ask whether a CSS color is usable and fall back when it is not.",
+      "decision": "The signature is Color | null and the callers in the GPU renderer and the window code test for null.",
+      "consequences": "A throw for malformed rgb()/rgba() breaks both callers' fallback; this is the change in the demo pull request.",
+      "evidence": [
+        {
+          "path": "src/vs/base/common/color.ts",
+          "line": 670,
+          "expect": "export function parse(css: string): Color | null"
+        },
+        {
+          "path": "src/vs/platform/windows/electron-main/windowImpl.ts",
+          "line": 538,
+          "expect": "if (!parsed) {"
+        }
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "id": "parse-throws",
+      "title": "CSS color parse throws where callers expect null",
+      "severity": "medium",
+      "category": "correctness",
+      "detail": "rgb(255 0 0), rgba(0, 0, 0, .5) and rgb( 1, 2, 3 ) are valid CSS but do not match the parser's patterns, so parse throws. canRender in the GPU renderer would throw instead of falling back to the DOM.",
+      "components": [
+        "base-color",
+        "editor-gpu",
+        "platform-windows"
+      ],
+      "evidence": [
+        {
+          "path": "src/vs/base/common/color.ts",
+          "line": 680,
+          "expect": "throw new Error('Invalid color format ' + css);"
+        }
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "contrib",
+      "definition": "A workbench feature folder under src/vs/workbench/contrib, registered by the main entry files.",
+      "refs": [
+        {
+          "path": "src/vs/workbench/workbench.common.main.ts",
+          "line": 212,
+          "expect": "'./contrib/"
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "q": "Do any themes or extensions pass rgb() strings in CSS Color 4 syntax to the GPU renderer today?",
+      "context": "Decides whether the throw has been hit by users; not established in this demo."
+    }
+  ],
+  "readingPath": [
+    {
+      "title": "Start with the agent instructions",
+      "target": "file:.github/copilot-instructions.md",
+      "note": "Layers, validation steps, coding rules (tabs, copyright header, disposables)."
+    },
+    {
+      "title": "The layering rules",
+      "target": "component:lint-rules",
+      "note": "Where the architecture is enforced today."
+    },
+    {
+      "title": "The change area",
+      "target": "flow:decoration-color-to-gpu",
+      "note": "Why parse must return null."
+    }
+  ]
+}

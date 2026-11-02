@@ -1,0 +1,759 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "tests-required",
+      "type": "tests-required",
+      "severity": "warn",
+      "minLines": 30,
+      "description": "A code change of 30+ lines comes with a test change.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 361,
+          "fired": 3,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": 0,
+          "baseRatePct": 18
+        }
+      }
+    },
+    {
+      "id": "layering",
+      "type": "layering",
+      "severity": "block",
+      "description": "Components depend downward through the model's layers: Build, tests and lint rules → Entry points → Workbench → Editor → Platform → Base.",
+      "source": "suggested",
+      "added": "2026-10-30",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 361,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 18
+        }
+      }
+    },
+    {
+      "id": "base-imports-only-base",
+      "type": "forbid-import",
+      "severity": "block",
+      "from": "src/vs/base/**",
+      "to": [
+        "src/vs/platform/**",
+        "src/vs/editor/**",
+        "src/vs/workbench/**",
+        "src/vs/sessions/**",
+        "src/vs/code/**",
+        "src/vs/server/**"
+      ],
+      "description": "Base is the bottom layer: it imports nothing from platform, editor, workbench, sessions or the entry points.",
+      "fix": "Move the shared piece down into base, or invert the dependency with an interface the upper layer implements.",
+      "evidence": [
+        ".github/copilot-instructions.md:30"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "platform-not-editor-or-workbench",
+      "type": "forbid-import",
+      "severity": "block",
+      "from": "src/vs/platform/**",
+      "to": [
+        "src/vs/editor/**",
+        "src/vs/workbench/**",
+        "src/vs/sessions/**"
+      ],
+      "description": "Platform services do not import the editor, the workbench or the agents window.",
+      "fix": "Define the service interface in platform and implement it higher up.",
+      "evidence": [
+        ".github/copilot-instructions.md:30"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "editor-not-workbench",
+      "type": "forbid-import",
+      "severity": "block",
+      "from": "src/vs/editor/**",
+      "to": [
+        "src/vs/workbench/**",
+        "src/vs/sessions/**"
+      ],
+      "description": "The editor (Monaco) does not import the workbench or the agents window; it ships on its own.",
+      "fix": "Expose an editor contribution point and register from the workbench side.",
+      "evidence": [
+        ".github/copilot-instructions.md:19",
+        ".github/copilot-instructions.md:30"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "workbench-not-sessions",
+      "type": "forbid-import",
+      "severity": "block",
+      "from": "src/vs/workbench/**",
+      "to": "src/vs/sessions/**",
+      "description": "The workbench never imports the agents window (src/vs/sessions); sessions may import the workbench, not the other way round.",
+      "fix": "Put what both need in the workbench (or lower) and import it from sessions.",
+      "evidence": [
+        ".github/copilot-instructions.md:27"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 1,
+          "followedByFixOrRevert": 1,
+          "hitRatePct": 100,
+          "baseRatePct": 23,
+          "head": "142f300f0459",
+          "examples": [
+            {
+              "sha": "7bb2c3d23d31",
+              "date": "2026-10-26",
+              "subject": "chat: open active work from progress status (#344202)",
+              "outcome": "fixed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "common-not-browser-or-node",
+      "type": "forbid-import",
+      "severity": "block",
+      "from": "src/vs/**/common/**",
+      "to": [
+        "src/vs/**/browser/**",
+        "src/vs/**/node/**",
+        "src/vs/**/electron-browser/**",
+        "src/vs/**/electron-main/**"
+      ],
+      "description": "Code in a common folder runs everywhere, so it imports nothing from browser, node or electron folders.",
+      "fix": "Keep the environment-specific part in browser/ or node/ and pass it in.",
+      "evidence": [
+        "eslint.config.js (code-layering)"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "browser-not-node",
+      "type": "forbid-import",
+      "severity": "block",
+      "from": "src/vs/**/browser/**",
+      "to": [
+        "src/vs/**/node/**",
+        "src/vs/**/electron-main/**"
+      ],
+      "description": "Browser code imports nothing from node or electron-main folders; it must also run on the web.",
+      "fix": "Reach node capabilities through a service with a node implementation.",
+      "evidence": [
+        "eslint.config.js (code-layering)"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "extensions-not-core-sources",
+      "type": "forbid-import",
+      "severity": "block",
+      "from": "extensions/**",
+      "module": "(^|/)src/vs/|^vs/(base|platform|editor|workbench)/",
+      "description": "Built-in extensions use the extension API, never VS Code's own sources.",
+      "fix": "Use the vscode API, or propose an API.",
+      "evidence": [
+        ".github/copilot-instructions.md:36"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "no-ts-ignore",
+      "type": "forbid-pattern",
+      "severity": "block",
+      "paths": [
+        "src/**/*.ts",
+        "extensions/**/*.ts",
+        "build/**/*.ts"
+      ],
+      "pattern": "@ts-(ignore|nocheck)\\b",
+      "description": "No @ts-ignore or @ts-nocheck: a type error is fixed, not hidden.",
+      "fix": "Fix the type, or narrow it with a guard.",
+      "evidence": [
+        ".github/copilot-instructions.md:149"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "no-any-annotation",
+      "type": "forbid-pattern",
+      "severity": "warn",
+      "paths": [
+        "src/vs/**/*.ts"
+      ],
+      "pattern": "(:\\s*any\\b|\\bas\\s+any\\b|<any>)",
+      "description": "No new `any` in a type annotation or cast.",
+      "fix": "Give it a real type or interface.",
+      "evidence": [
+        ".github/copilot-instructions.md:149"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 5,
+          "followedByFixOrRevert": 4,
+          "hitRatePct": 80,
+          "baseRatePct": 23,
+          "head": "142f300f0459",
+          "examples": [
+            {
+              "sha": "cbbdb789c3e3",
+              "date": "2026-10-26",
+              "subject": "Engineering - run unit tests in parallel worker processes (#344382)",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "3db55542a238",
+              "date": "2026-10-27",
+              "subject": "agentHost: count jobs behind required checks and surface SSO blocks",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "815a615754df",
+              "date": "2026-10-28",
+              "subject": "agentHost: withhold semantic search under managed permission rules (#343255)",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "8c18263e1c08",
+              "date": "2026-10-28",
+              "subject": "agentHost: chats with their own harness in a session (multipleChatProviders) (#344685)",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "99dd1f417eae",
+              "date": "2026-10-27",
+              "subject": "agentHost: fix GitHub MCP Authenticate doing nothing after a Connector credential downgrade",
+              "outcome": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "no-new-globals",
+      "type": "forbid-pattern",
+      "severity": "block",
+      "paths": [
+        "src/vs/**/*.ts"
+      ],
+      "pattern": "^\\s*declare\\s+global\\b",
+      "description": "No new types or values in the global namespace.",
+      "fix": "Export it from a module and import it where needed.",
+      "evidence": [
+        ".github/copilot-instructions.md:90"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "no-active-group-open-editor",
+      "type": "forbid-pattern",
+      "severity": "block",
+      "paths": [
+        "src/vs/**/*.ts"
+      ],
+      "pattern": "activeGroup\\.openEditor\\(",
+      "description": "Open editors with IEditorService, not IEditorGroupsService.activeGroup.openEditor.",
+      "fix": "Inject IEditorService and call openEditor on it, so revealIfOpened and preserveFocus apply.",
+      "evidence": [
+        ".github/copilot-instructions.md:155"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "no-concatenated-localized-text",
+      "type": "forbid-pattern",
+      "severity": "block",
+      "paths": [
+        "src/vs/**/*.ts"
+      ],
+      "pattern": "localize2?\\(\\s*['\"][^'\"]+['\"]\\s*,\\s*\"[^\"]*\"\\s*\\+",
+      "description": "Localized text uses placeholders ({0}), never string concatenation.",
+      "fix": "localize('key', \"Text {0}\", value)",
+      "evidence": [
+        ".github/copilot-instructions.md:101"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "no-focused-tests",
+      "type": "forbid-pattern",
+      "severity": "block",
+      "paths": [
+        "src/**/*.ts",
+        "extensions/**/*.ts",
+        "test/**/*.ts"
+      ],
+      "ignoreTests": false,
+      "pattern": "\\b(suite|test|it|describe)\\.only\\(",
+      "description": "No .only in a test file: it silently skips every other test.",
+      "fix": "Remove .only before committing.",
+      "evidence": [
+        "factory policy"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "no-debugger-statement",
+      "type": "forbid-pattern",
+      "severity": "block",
+      "paths": [
+        "src/**/*.ts",
+        "extensions/**/*.ts"
+      ],
+      "ignoreTests": false,
+      "pattern": "^\\s*debugger;?\\s*$",
+      "description": "No debugger statements.",
+      "fix": "Remove it.",
+      "evidence": [
+        "factory policy"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "copyright-header-on-new-files",
+      "type": "require-added-pattern",
+      "severity": "block",
+      "paths": [
+        "src/vs/**/*.ts",
+        "src/vs/**/*.css",
+        "build/**/*.ts"
+      ],
+      "fileStatus": [
+        "A"
+      ],
+      "pattern": "Copyright \\(c\\) Microsoft Corporation",
+      "description": "Every new source file starts with the Microsoft copyright header.",
+      "fix": "Copy the header from any existing file in src/vs.",
+      "evidence": [
+        ".github/copilot-instructions.md:139"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 0,
+          "followedByFixOrRevert": 0,
+          "hitRatePct": null,
+          "baseRatePct": 23,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "ci-workflows-reviewed",
+      "type": "protected-paths",
+      "severity": "warn",
+      "paths": [
+        ".github/workflows/**",
+        "build/azure-pipelines/**"
+      ],
+      "description": "Changes to CI workflows and pipelines are flagged for a person.",
+      "fix": "Keep CI changes in their own pull request for a code owner.",
+      "evidence": [
+        ".github/CODEOWNERS"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 30,
+          "followedByFixOrRevert": 5,
+          "hitRatePct": 17,
+          "baseRatePct": 23,
+          "head": "142f300f0459",
+          "examples": [
+            {
+              "sha": "357b0857281c",
+              "date": "2026-10-26",
+              "subject": "ci: report the PR test checks as \"<OS> / <job>\" (#344400)",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "cbbdb789c3e3",
+              "date": "2026-10-26",
+              "subject": "Engineering - run unit tests in parallel worker processes (#344382)",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "522f16002f67",
+              "date": "2026-10-27",
+              "subject": "Engineering - run browser unit tests in parallel worker processes (#344448)",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "a369c6e977cb",
+              "date": "2026-10-28",
+              "subject": "ci: faster pull request runs: split slow Linux jobs, cancel on compile failure, Windows cache on Dev",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "61b0e66fa691",
+              "date": "2026-11-01",
+              "subject": "Upgrade the software factory: fence judged from the base branch, review page, intent records",
+              "outcome": "fixed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "lint-rules-reviewed",
+      "type": "protected-paths",
+      "severity": "warn",
+      "paths": [
+        "eslint.config.js",
+        ".eslint-plugin-local/**"
+      ],
+      "description": "Changes to VS Code's lint rules are flagged for a person.",
+      "fix": "Change lint rules in their own pull request, not to make a change pass.",
+      "evidence": [
+        "eslint.config.js"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": true,
+          "commits": 483,
+          "fired": 7,
+          "followedByFixOrRevert": 1,
+          "hitRatePct": 14,
+          "baseRatePct": 23,
+          "head": "142f300f0459",
+          "examples": [
+            {
+              "sha": "cbbdb789c3e3",
+              "date": "2026-10-26",
+              "subject": "Engineering - run unit tests in parallel worker processes (#344382)",
+              "outcome": "fixed"
+            },
+            {
+              "sha": "1b3420fbbb83",
+              "date": "2026-10-29",
+              "subject": "agentHost: finish Claude callback-rule adoption (#345101)",
+              "outcome": null
+            },
+            {
+              "sha": "3b216a5d6126",
+              "date": "2026-10-29",
+              "subject": "agentHost: remove Claude prompt queue callback dependencies (#345086)",
+              "outcome": null
+            },
+            {
+              "sha": "ae2b7b27e4c0",
+              "date": "2026-10-29",
+              "subject": "agentHost: reuse the Claude client-tool ownership model (#345083)",
+              "outcome": null
+            },
+            {
+              "sha": "b5e215cff353",
+              "date": "2026-10-29",
+              "subject": "agentHost: adopt callback rule in selected Claude files (#345081)",
+              "outcome": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "no-shared-node-modules",
+      "type": "forbid-command",
+      "severity": "block",
+      "pattern": "\\bln\\s+-s[a-zA-Z]*\\s+\\S*node_modules",
+      "description": "An agent never shares or symlinks node_modules between worktrees.",
+      "fix": "Run npm run install-fast in the worktree.",
+      "evidence": [
+        ".github/copilot-instructions.md:65"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": false,
+          "commits": null,
+          "fired": null,
+          "followedByFixOrRevert": null,
+          "hitRatePct": null,
+          "baseRatePct": null,
+          "head": "142f300f0459"
+        }
+      }
+    },
+    {
+      "id": "no-force-push",
+      "type": "forbid-command",
+      "severity": "block",
+      "pattern": "\\bgit\\s+push\\b.*(--force\\b|\\s-f\\b|--force-with-lease)",
+      "description": "An agent never force-pushes.",
+      "fix": "Push new commits; a person decides history rewrites.",
+      "evidence": [
+        "factory policy"
+      ],
+      "source": "vscode-guidelines",
+      "added": "2026-11-02",
+      "status": "active",
+      "decided": {
+        "by": "Matt (owner), applied by Claude at his direction on 2026-11-02",
+        "on": "2026-11-02",
+        "why": "High-signal rules from VS Code's own guidelines and its map: none fired falsely on the last 483 commits, and planted violations fire. Noisy or narrow rules stay proposed.",
+        "replay": {
+          "replayable": false,
+          "commits": null,
+          "fired": null,
+          "followedByFixOrRevert": null,
+          "hitRatePct": null,
+          "baseRatePct": null,
+          "head": "142f300f0459"
+        }
+      }
+    }
+  ],
+  "exceptions": []
+}

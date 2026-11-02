@@ -1,0 +1,55 @@
+# Publishes this branch (a static copy of the codebase map, the rules page and the C4 diagrams) to GitHub Pages.
+# Works either way Pages is set up:
+# - Settings > Pages > Source "Deploy from a branch", branch gh-pages, folder / (root): GitHub serves the files as
+#   they are and this workflow does nothing.
+# - Source "GitHub Actions": this workflow uploads and deploys the branch. If the deploy is refused by the
+#   github-pages environment's branch rule, add gh-pages under Settings > Environments > github-pages.
+name: Pages
+on:
+  push:
+    branches: [gh-pages]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      actions: ${{ steps.mode.outputs.actions }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Is Pages set to publish from Actions?
+        id: mode
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          type=$(gh api "repos/$REPO/pages" --jq .build_type 2>/dev/null || true)
+          echo "actions=$([ "$type" = workflow ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "Pages build type: ${type:-not set up}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Collect the site
+        run: |
+          mkdir _site
+          cp -R index.html .nojekyll img map rules c4 _site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    if: needs.build.outputs.actions == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

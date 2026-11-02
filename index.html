@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VS Code, mapped</title>
+<meta name="description" content="A static demonstration of the codebase map, rules page and C4 diagrams built for this fork of VS Code.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F1419;--ink-2:#2B323C;--ink-3:#4A5260;--muted:#5A6472;--line:#E2E5EA;--line-2:#D5DAE1;--subtle:#F7F8FA;--blue:#0047BB;--blue-ink:#003A99;--blue-tint:#E6EDFA;
+  --sans:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;--mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-ink);text-decoration:underline}
+code{font-family:var(--mono);font-size:13px;background:var(--subtle);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.bar{border-bottom:1px solid var(--line);background:#fff}
+.bar .in{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+.bar .r{margin-left:auto;font-weight:400;font-size:13px;color:var(--muted)}
+main{max-width:1080px;margin:0 auto;padding:40px 24px 64px}
+h1{font-size:30px;line-height:1.2;letter-spacing:-.02em;margin:0 0 12px}
+.lede{font-size:17px;color:var(--ink-2);max-width:760px;margin:0}
+.note{margin:18px 0 0;font-size:14px;color:var(--muted);max-width:760px}
+.views{margin:40px 0 0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.view{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:32px;align-items:center;padding:32px 0;border-bottom:1px solid var(--line)}
+.view img{width:100%;height:auto;display:block;border:1px solid var(--line-2);border-radius:8px}
+.view .eb{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.view h2{font-size:21px;margin:4px 0 8px;letter-spacing:-.01em}
+.view p{margin:0 0 10px;color:var(--ink-2)}
+.view ul{margin:0 0 14px;padding-left:18px;color:var(--ink-2);font-size:14px}
+.view li{margin:3px 0}
+.open{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:6px;background:var(--blue);color:#fff;font-weight:600;font-size:14px}
+.open:hover{background:var(--blue-ink);color:#fff;text-decoration:none}
+h3{font-size:16px;margin:40px 0 10px}
+.prs{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:8px}
+.prs li{display:flex;gap:14px;align-items:baseline;padding:12px 16px}
+.prs li+li{border-top:1px solid var(--line)}
+.prs .n{font-family:var(--mono);font-size:13px;color:var(--muted);flex:none;width:28px}
+.prs .d{font-size:13px;color:var(--muted)}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media (max-width:820px){.view{grid-template-columns:1fr;gap:16px}h1{font-size:25px}main{padding:28px 16px 48px}.bar .in{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="in">
+  <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="5" fill="#0047BB"/><path d="M5 7.5 9 5.5l4 2 4-2v9l-4 2-4-2-4 2Z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 5.5v9M13 7.5v9" stroke="#fff" stroke-width="1.4"/></svg>
+  VS Code, mapped <span class="r">vosbek/vscode-fence-test</span>
+</div></div>
+<main>
+  <h1>VS Code, mapped by the software factory</h1>
+  <p class="lede">This fork of VS Code has the software factory installed: a codebase map an agent reads before it edits, rules every change is checked against, and C4 diagrams drawn from the map. These are read-only copies of all three, built from the fork's own files.</p>
+  <p class="note">This is a static copy. Asking questions on the map runs Claude Code on your own machine, so it needs a clone: from a checkout of the <code>factory/onboard</code> branch, run <code>python3 .cartographer/bin/ask.py</code>.</p>
+
+  <section class="views" aria-label="What is here">
+    <article class="view">
+      <a href="map/#/map?open=sys"><img src="img/map.jpg" alt="The codebase map: VS Code's components grouped by layer inside the system boundary, with import wires between them" loading="lazy"></a>
+      <div>
+        <div class="eb">Codebase map</div>
+        <h2>An expandable C4 map of the code</h2>
+        <p>It opens at the system context. Expand the system to see its 21 components by layer, then expand any component to see its folders and files.</p>
+        <ul>
+          <li>Wires come from real imports and the edges the map declares.</li>
+          <li>Changed, New and Hotspot badges come from git history.</li>
+          <li>Search with <code>/</code> opens the boxes down to any file.</li>
+        </ul>
+        <a class="open" href="map/#/map">Open the map</a>
+      </div>
+    </article>
+    <article class="view">
+      <a href="rules/"><img src="img/rules.jpg" alt="The rules page: proposed rules, each tested on the repository's history, and how a person decides them" loading="lazy"></a>
+      <div>
+        <div class="eb">Rules page</div>
+        <h2>The rules agents work under</h2>
+        <p>Every rule proposed for this repository, each tested on its last 361 commits, and the fence checks every pull request runs.</p>
+        <ul>
+          <li>Shows what each rule stops and when it is checked.</li>
+          <li>Shows who decides: a person accepts or rejects each rule from a checkout. Agents cannot.</li>
+          <li>Lists exceptions, owners and what is waiting on a person.</li>
+        </ul>
+        <a class="open" href="rules/">Open the rules page</a>
+      </div>
+    </article>
+    <article class="view">
+      <a href="c4/"><img src="img/c4.jpg" alt="C4 diagrams: VS Code in its system context, its components, and two traced journeys" loading="lazy"></a>
+      <div>
+        <div class="eb">C4 diagrams</div>
+        <h2>Architecture as C4, every box citing its files</h2>
+        <p>The system context, the components by layer, and two journeys traced step by step: a CSS colour through the GPU renderer, and a chat input button from menu to toolbar.</p>
+        <a class="open" href="c4/">Open the diagrams</a>
+      </div>
+    </article>
+  </section>
+
+  <h3>The pull requests on this fork</h3>
+  <ul class="prs">
+    <li><span class="n">#1</span><div><a href="https://github.com/vosbek/vscode-fence-test/pull/1">Onboard the software factory</a> <span class="d">· the map, the fence and the review page, in large-repository mode</span></div></li>
+    <li><span class="n">#4</span><div><a href="https://github.com/vosbek/vscode-fence-test/pull/4">Demo 1: Clear Prompt button in the chat input</a> <span class="d">· a change with an intent record; every check passes and only the approvals remain</span></div></li>
+    <li><span class="n">#5</span><div><a href="https://github.com/vosbek/vscode-fence-test/pull/5">Demo 2: a planted follow-up</a> <span class="d">· blocked for a deleted test, a removed check and a change nobody asked for</span></div></li>
+    <li><span class="n">#2</span><div><a href="https://github.com/vosbek/vscode-fence-test/pull/2">Color.Format.CSS.parse returns null instead of throwing</a> <span class="d">· an early run</span></div></li>
+    <li><span class="n">#3</span><div><a href="https://github.com/vosbek/vscode-fence-test/pull/3">Chat input: Clear Prompt button beside Send</a> <span class="d">· an early run</span></div></li>
+  </ul>
+
+  <footer>Built from the <code>factory/onboard</code> branch at <code>142f300</code> (1 Nov 2026). The map was surveyed at <code>9019233</code> and covers the whole repository at component level. Of VS Code's 20,777 files, the map shows each component's busiest 6,000.</footer>
+</main>
+</body>
+</html>

@@ -948,7 +948,6 @@ export class ClearChatInputAction extends Action2 {
 				group: 'navigation',
 				when: ContextKeyExpr.and(
 					ChatContextKeys.inputHasText,
-					whenNoActiveRequest,
 					ChatContextKeys.withinEditSessionDiff.negate(),
 				),
 			}],
@@ -966,9 +965,7 @@ export class ClearChatInputAction extends Action2 {
 		if (!model || model.getValueLength() === 0) {
 			return;
 		}
-		editor.pushUndoStop();
-		editor.executeEdits(ClearChatInputAction.ID, [{ range: model.getFullModelRange(), text: '' }]);
-		editor.pushUndoStop();
+		model.setValue('');
 		widget.focusInput();
 	}
 }

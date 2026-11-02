@@ -6,8 +6,10 @@
 import assert from 'assert';
 import { DisposableStore } from '../../../../../../base/common/lifecycle.js';
 import { constObservable, observableValue } from '../../../../../../base/common/observable.js';
+import { ThemeIcon } from '../../../../../../base/common/themables.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
+import { withTestCodeEditor } from '../../../../../../editor/test/browser/testCodeEditor.js';
 import { upcastPartial } from '../../../../../../base/test/common/mock.js';
 import { CommandsRegistry } from '../../../../../../platform/commands/common/commands.js';
 import { IMenuItem, isIMenuItem, MenuId, MenuRegistry } from '../../../../../../platform/actions/common/actions.js';
@@ -19,7 +21,7 @@ import { ILogService, NullLogService } from '../../../../../../platform/log/comm
 import { IsSessionsWindowContext } from '../../../../../common/contextkeys.js';
 import { AGENT_HOST_EXISTING_SESSION_HARNESS_PICKER_ENABLED_CONTEXT_KEY } from '../../../../../../platform/agentHost/common/agentHostEnablementService.js';
 import { type IChatAcceptInputOptions, IChatWidget, IChatWidgetService } from '../../../browser/chat.js';
-import { CancelAction, ChatEditingSessionSubmitAction, ChatSubmitAction, ExecuteHandoffActionId, GetHandoffsActionId, OpenDelegationPickerAction, OpenModelPickerAction, OpenSessionTargetPickerAction, registerChatExecuteActions } from '../../../browser/actions/chatExecuteActions.js';
+import { CancelAction, ChatEditingSessionSubmitAction, ChatSubmitAction, ClearChatInputAction, ExecuteHandoffActionId, GetHandoffsActionId, OpenDelegationPickerAction, OpenModelPickerAction, OpenSessionTargetPickerAction, registerChatExecuteActions } from '../../../browser/actions/chatExecuteActions.js';
 import { ChatQueueMessageAction, ChatSteerWithMessageAction } from '../../../browser/actions/chatQueueActions.js';
 import { AgentSessionProviders } from '../../../browser/agentSessions/agentSessions.js';
 import { ChatContextKeys } from '../../../common/actions/chatContextKeys.js';
@@ -666,5 +668,75 @@ suite('ChatSubmitAction', () => {
 		});
 
 		assert.deepStrictEqual(acceptedOptions, { cancelCurrentRequest: true });
+	});
+});
+
+suite('ClearChatInputAction', () => {
+	ensureNoDisposablesAreLeakedInTestSuite();
+
+	let chatExecuteActions: DisposableStore;
+	suiteSetup(() => {
+		chatExecuteActions = registerChatExecuteActions();
+	});
+
+	suiteTeardown(() => {
+		chatExecuteActions.dispose();
+	});
+
+	// Each test proves one worked example in intent/clear-prompt/intent.json; the [E#] tag names it.
+	const menuItem = (id: string) => MenuRegistry.getMenuItems(MenuId.ChatExecute)
+		.find((candidate): candidate is IMenuItem => isIMenuItem(candidate) && candidate.command.id === id);
+	const shownWhen = (values: Record<string, ContextKeyValue>) => {
+		const item = menuItem(ClearChatInputAction.ID);
+		assert.ok(item?.when);
+		return item.when.evaluate({ getValue: <T extends ContextKeyValue = ContextKeyValue>(key: string) => values[key] as T });
+	};
+
+	test('[E1] shows directly before Send, with the chat-clear-input icon, while the input has a draft', () => {
+		const clear = menuItem(ClearChatInputAction.ID);
+		const send = menuItem(ChatSubmitAction.ID);
+		assert.deepStrictEqual({
+			order: clear?.order,
+			sendOrder: send?.order,
+			icon: clear && ThemeIcon.isThemeIcon(clear.command.icon) ? clear.command.icon.id : undefined,
+			shown: shownWhen({ [ChatContextKeys.inputHasText.key]: true }),
+		}, { order: 3, sendOrder: 4, icon: 'chat-clear-input', shown: true });
+	});
+
+	test('[E2] is hidden while the input is empty', () => {
+		assert.strictEqual(shownWhen({ [ChatContextKeys.inputHasText.key]: false }), false);
+	});
+
+	test('[E3] is hidden while a request is running, even with a draft', () => {
+		assert.strictEqual(shownWhen({ [ChatContextKeys.inputHasText.key]: true, [ChatContextKeys.hasActiveRequest.key]: true }), false);
+	});
+
+	test('[E4] clears every line as one edit that one Undo restores exactly, and keeps focus in the input', () => {
+		withTestCodeEditor('Explain this file\nand its tests', {}, (editor, _viewModel, instantiationService) => {
+			let focused = 0;
+			const widget = upcastPartial<IChatWidget>({ inputEditor: editor, focusInput: () => { focused++; } });
+
+			instantiationService.invokeFunction(accessor => new ClearChatInputAction().run(accessor, { widget }));
+			const afterClear = editor.getValue();
+			const focusedAfterClear = focused;
+			editor.getModel()!.undo();
+
+			assert.deepStrictEqual({ afterClear, focusedAfterClear, afterUndo: editor.getValue() }, {
+				afterClear: '',
+				focusedAfterClear: 1,
+				afterUndo: 'Explain this file\nand its tests',
+			});
+		});
+	});
+
+	test('[E5] changes nothing in an empty input and leaves nothing to undo', () => {
+		withTestCodeEditor('', {}, (editor, _viewModel, instantiationService) => {
+			let focused = 0;
+			const widget = upcastPartial<IChatWidget>({ inputEditor: editor, focusInput: () => { focused++; } });
+
+			instantiationService.invokeFunction(accessor => new ClearChatInputAction().run(accessor, { widget }));
+
+			assert.deepStrictEqual({ value: editor.getValue(), focused, canUndo: editor.getModel()!.canUndo() }, { value: '', focused: 0, canUndo: false });
+		});
 	});
 });

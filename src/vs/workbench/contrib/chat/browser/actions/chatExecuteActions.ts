@@ -23,6 +23,7 @@ import { KeybindingWeight } from '../../../../../platform/keybinding/common/keyb
 import { ILogService } from '../../../../../platform/log/common/log.js';
 import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
 import { AGENT_HOST_EXISTING_SESSION_HARNESS_PICKER_ENABLED_CONTEXT_KEY } from '../../../../../platform/agentHost/common/agentHostEnablementService.js';
+import { registerIcon } from '../../../../../platform/theme/common/iconRegistry.js';
 import { IsSessionsWindowContext } from '../../../../common/contextkeys.js';
 import { ChatContextKeyExprs, ChatContextKeys } from '../../common/actions/chatContextKeys.js';
 import { buildCustomAgentHandoffsInfo, getHandoffId, IChatMode, IChatModeService, IChatModes } from '../../common/chatModes.js';
@@ -919,6 +920,59 @@ class SendToNewChatAction extends Action2 {
 	}
 }
 
+/**
+ * An eraser rather than a close X: next to Send, an X reads as cancel or close the chat.
+ * Registered so product icon themes can replace it.
+ */
+const clearChatInputIcon = registerIcon('chat-clear-input', Codicon.eraser, localize('chatClearInputIcon', "Icon for the Clear Prompt action in the chat input."));
+
+/**
+ * Clears the prompt text in the chat input, keeping attached context. The edit goes
+ * through the editor's undo stack, so Undo brings the draft back.
+ */
+export class ClearChatInputAction extends Action2 {
+	static readonly ID = 'workbench.action.chat.clearInput';
+	constructor() {
+		super({
+			id: ClearChatInputAction.ID,
+			title: localize2('chat.clearInput.label', "Clear Prompt"),
+			tooltip: localize('chat.clearInput.tooltip', "Clear Prompt (Undo restores it)"),
+			icon: clearChatInputIcon,
+			precondition: ChatContextKeys.inputHasText,
+			category: CHAT_CATEGORY,
+			f1: true,
+			menu: [{
+				id: MenuId.ChatExecute,
+				// Before Send (order 4), and only while there is a draft to clear.
+				order: 3,
+				group: 'navigation',
+				when: ContextKeyExpr.and(
+					ChatContextKeys.inputHasText,
+					whenNoActiveRequest,
+					ChatContextKeys.withinEditSessionDiff.negate(),
+				),
+			}],
+		});
+	}
+
+	run(accessor: ServicesAccessor, ...args: unknown[]): void {
+		const context = args[0] as IChatExecuteActionContext | undefined;
+		const widget = context?.widget ?? accessor.get(IChatWidgetService).lastFocusedWidget;
+		if (!widget) {
+			return;
+		}
+		const editor = widget.inputEditor;
+		const model = editor.getModel();
+		if (!model || model.getValueLength() === 0) {
+			return;
+		}
+		editor.pushUndoStop();
+		editor.executeEdits(ClearChatInputAction.ID, [{ range: model.getFullModelRange(), text: '' }]);
+		editor.pushUndoStop();
+		widget.focusInput();
+	}
+}
+
 export const CancelChatActionId = 'workbench.action.chat.cancel';
 export class CancelAction extends Action2 {
 	static readonly ID = CancelChatActionId;
@@ -1204,6 +1258,7 @@ export function registerChatExecuteActions(): DisposableStore {
 	store.add(registerAction2(SubmitWithoutDispatchingAction));
 	store.add(registerAction2(CancelAction));
 	store.add(registerAction2(SendToNewChatAction));
+	store.add(registerAction2(ClearChatInputAction));
 	store.add(registerAction2(ChatSubmitWithCodebaseAction));
 	store.add(registerAction2(ToggleChatModeAction));
 	store.add(registerAction2(SwitchToNextModelAction));

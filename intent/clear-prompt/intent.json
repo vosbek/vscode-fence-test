@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "id": "clear-prompt",
+  "title": "Clear Prompt button in the chat input",
+  "request": "Demo request, drafted by the coding agent for the owner to confirm: let people clear a draft in the chat input with one click. Today a draft can only be removed by selecting it and deleting it.",
+  "owner": {
+    "name": "Matt",
+    "role": "owner of this VS Code fork"
+  },
+  "outcome": "Someone who changes their mind about a prompt can discard it with one click and get it back with Undo, without selecting text.",
+  "for": [
+    "People writing prompts in the chat input"
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "text": "A Clear Prompt control sits in the chat input toolbar, immediately before Send.",
+      "source": "assumption"
+    },
+    {
+      "id": "R2",
+      "text": "It is shown only while the input has text and no request is running.",
+      "source": "assumption"
+    },
+    {
+      "id": "R3",
+      "text": "Clearing removes every line of the draft as one edit, and one Undo restores the draft exactly.",
+      "source": "assumption"
+    },
+    {
+      "id": "R4",
+      "text": "After clearing, focus stays in the chat input.",
+      "source": "assumption"
+    },
+    {
+      "id": "R5",
+      "text": "Clearing an empty input changes nothing and leaves nothing to undo.",
+      "source": "assumption"
+    },
+    {
+      "id": "R6",
+      "text": "Its icon is registered as chat-clear-input, so icon themes can replace it.",
+      "source": "assumption"
+    }
+  ],
+  "examples": [
+    {
+      "id": "E1",
+      "rules": [
+        "R1",
+        "R6"
+      ],
+      "source": "assumption",
+      "given": "The chat input contains \"Explain this file\" and no request is running.",
+      "when": "The input toolbar is built.",
+      "then": "Clear Prompt appears at order 3, directly before Send at order 4, with the icon chat-clear-input."
+    },
+    {
+      "id": "E2",
+      "rules": [
+        "R2"
+      ],
+      "source": "assumption",
+      "given": "The chat input is empty.",
+      "when": "The input toolbar is built.",
+      "then": "Clear Prompt is not shown."
+    },
+    {
+      "id": "E3",
+      "rules": [
+        "R2"
+      ],
+      "source": "assumption",
+      "given": "The chat input contains \"Explain this file\" and a request is running.",
+      "when": "The input toolbar is built.",
+      "then": "Clear Prompt is not shown."
+    },
+    {
+      "id": "E4",
+      "rules": [
+        "R3",
+        "R4"
+      ],
+      "source": "assumption",
+      "given": "The chat input contains two lines, \"Explain this file\" and \"and its tests\".",
+      "when": "Clear Prompt runs, then Undo is pressed once.",
+      "then": "After Clear Prompt the input is empty and focus is in the input once; after one Undo the input is exactly \"Explain this file\" and \"and its tests\" on two lines."
+    },
+    {
+      "id": "E5",
+      "rules": [
+        "R5"
+      ],
+      "source": "assumption",
+      "given": "The chat input is empty.",
+      "when": "Clear Prompt runs.",
+      "then": "The input stays empty, focus is not moved, and there is nothing to undo."
+    }
+  ],
+  "outOfScope": [
+    {
+      "text": "Removing attached context: Clear Prompt clears only the text.",
+      "source": "assumption"
+    },
+    {
+      "text": "A keyboard shortcut for Clear Prompt.",
+      "source": "assumption"
+    }
+  ],
+  "questions": [],
+  "impact": [
+    {
+      "system": "vscode",
+      "examples": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "components": [
+        "chat-actions",
+        "component-fixtures"
+      ],
+      "why": "The chat input's toolbar actions are defined in chatExecuteActions.ts; the component explorer renders the input for screenshots.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts"
+        },
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/renderChatInput.ts"
+        }
+      ],
+      "confirmedBy": ""
+    }
+  ]
+}

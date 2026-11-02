@@ -28,6 +28,8 @@ import { ChatInputFixtureOptions, renderChatInput } from './renderChatInput.js';
 
 import '../../../../contrib/chat/browser/widget/media/chat.css';
 
+const sampleDraft = 'Explain how the chat input decides which buttons to show beside Send';
+
 const sampleArtifacts = [
 	{ label: 'Dev Server', uri: 'http://localhost:3000', type: 'devServer' as const },
 	{ label: 'Screenshot', uri: 'file:///tmp/screenshot.png', type: 'screenshot' as const },
@@ -216,6 +218,8 @@ function renderCopilotIntroductionComparison(context: ComponentFixtureContext): 
 
 export default defineThemedFixtureGroup({ path: 'chat/input/' }, {
 	Default: defineComponentFixture({ render: context => renderChatInput(context) }),
+	WithDraft: defineComponentFixture({ render: context => renderChatInput(context, { value: sampleDraft }) }),
+	NarrowWithDraft: defineComponentFixture({ render: context => renderChatInput(context, { value: sampleDraft, width: 320 }) }),
 	WithSandboxing: defineComponentFixture({ render: context => renderChatInput(context, { sandboxingEnabled: true }) }),
 	WithProviderIcon: defineComponentFixture({ render: context => renderChatInput(context, { models: sampleModels }) }),
 	WithShortModelName: defineComponentFixture({ render: context => renderChatInput(context, { models: shortNameModels }) }),

@@ -186,6 +186,15 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
   const failed = checks.filter((r) => r.status === "fail");
   const skipped = checks.filter((r) => r.status === "skip");
   const byName = new Map();
+  // A title with \${...} in it is a parameterized test: it runs once per value under the filled-in name.
+  const templateResult = (title) => {
+    if (!title.includes("${")) return undefined;
+    const rx = new RegExp(`^${title.split(/\$\{[^}]*\}/).map((p) => p.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&")).join(".+")}$`);
+    const hits = results.filter((r) => rx.test(r.classname && r.classname !== "test" ? r.classname : r.name) || rx.test(r.name));
+    if (!hits.length) return undefined;
+    return { status: hits.some((r) => r.status === "failed") ? "failed" : hits.every((r) => r.status === "passed") ? "passed" : "skipped" };
+  };
+  const statusOf = (title) => byName.get(title)?.status ?? templateResult(title)?.status;
   for (const r of results)
     for (const key of [r.name, r.classname && r.classname !== "test" ? r.classname : null].filter(Boolean))
       if (!byName.has(key) || r.status === "failed") byName.set(key, r);
@@ -206,8 +215,7 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
     for (const t of tf.titles) {
       const id = exampleOf(t);
       if (!id) continue;
-      const r = byName.get(t);
-      (tagged.get(id) ?? tagged.set(id, []).get(id)).push({ title: t, file: tf.file, status: r ? r.status : "did not run", isNew: tf.newTitles.includes(t), code: testBody(tf.text ?? "", t, tf.file) });
+      (tagged.get(id) ?? tagged.set(id, []).get(id)).push({ title: t, file: tf.file, status: statusOf(t) ?? "did not run", isNew: tf.newTitles.includes(t), code: testBody(tf.text ?? "", t, tf.file) });
     }
   const proof = examples.map((e) => {
     const ts = tagged.get(String(e.id).toUpperCase()) ?? [];
@@ -234,11 +242,11 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
   // 4. What else uses the changed code
   // A test file "ran" when any of its tests has a result. In large-repository mode only affected tests run; the rest
   // are counted, not listed as passing.
-  const ran = (t) => titlesOf.get(t).titles.some((x) => byName.has(x));
+  const ran = (t) => titlesOf.get(t).titles.some((x) => statusOf(x));
   const holds = liveCode.map((f) => {
     const tfs = (reach[f.file] ?? []).filter((t) => titlesOf.has(t));
     const ranTfs = tfs.filter(ran);
-    const existing = ranTfs.flatMap((t) => titlesOf.get(t).titles.filter((x) => !titlesOf.get(t).newTitles.includes(x) && !exampleOf(x)).map((x) => ({ title: x, file: t, status: byName.get(x)?.status ?? "did not run" })));
+    const existing = ranTfs.flatMap((t) => titlesOf.get(t).titles.filter((x) => !titlesOf.get(t).newTitles.includes(x) && !exampleOf(x)).map((x) => ({ title: x, file: t, status: statusOf(x) ?? "did not run" })));
     return { f, tfs, ranTfs, notRun: tfs.length - ranTfs.length, existing };
   });
   const unreached = holds.filter((h) => !h.tfs.length);
@@ -256,8 +264,10 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
     blockers.push(`**Check failed: ${r.title}.** ${what}`);
     next.push(`The author fixes what ${c(r.id)} reports. If the check is wrong, a person runs \`/tend-fence\` and changes the check or records an exception, with a reason, a named approver and an end date.`);
   }
-  for (const r of skipped) blockers.push(`**Check did not run: ${r.title}** (${r.summary}). Nothing it covers is checked on this change.`);
-  for (const r of checks.filter((x) => x.category === "tests" && x.run && "results" in x && !x.results))
+  // Skipped because nothing it covers changed: not a gap. Skipped for any other reason (a missing tool): a gap.
+  const nothingToCheck = (r) => /^no (changed|affected) files|^no verification\/|^first install/.test(r.summary ?? "");
+  for (const r of skipped.filter((x) => !nothingToCheck(x))) blockers.push(`**Check did not run: ${r.title}** (${r.summary}). Nothing it covers is checked on this change.`);
+  for (const r of checks.filter((x) => x.status !== "skip" && x.category === "tests" && x.run && "results" in x && !x.results))
     blockers.push(`**${r.title} wrote no per-test results,** so this page cannot say which of its tests ran.`);
   if (!rec) {
     blockers.push("**No stated requirement.** No intent record is linked (an `Intent: intent/<id>` line in a commit message, or a changed `intent/<id>/intent.json`). Without one, nothing here can tell you the change does the right thing, only that it passes its own tests.");
@@ -403,7 +413,7 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
   for (const r of checks) {
     const mine = results.filter((x) => x.check === r.id);
     const tests = mine.length ? `${plural(mine.length, "test")} ran, ${mine.filter((x) => x.status === "passed").length} passed. ` : "";
-    const mark = { pass: "passed", fail: "**failed**", skip: "**did not run**" }[r.status] ?? r.status;
+    const mark = r.status === "skip" && nothingToCheck(r) ? "nothing to check" : ({ pass: "passed", fail: "**failed**", skip: "**did not run**" }[r.status] ?? r.status);
     L.push(`| ${cell(r.title)} | ${cell(r.explain ?? BUILTIN[r.id] ?? "")} | ${tests}${mark}${r.status === "pass" ? "" : `: ${cell(r.summary)}`} |`);
   }
   L.push("");

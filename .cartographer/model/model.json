@@ -117,6 +117,45 @@
       ]
     },
     {
+      "id": "chat-input",
+      "name": "Chat input (contrib/chat/browser/widget/input)",
+      "layer": "workbench",
+      "kind": "ui",
+      "paths": [
+        "src/vs/workbench/contrib/chat/browser/widget/input"
+      ],
+      "summary": "The Copilot chat box: the input editor, attachments, pickers and the execute toolbar whose buttons come from the ChatExecute menu.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 3689,
+          "expect": "dom.h('.chat-input-toolbars@inputToolbars')"
+        },
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 4309,
+          "expect": "this.executeToolbar.getElement().classList.add('chat-execute-toolbar');"
+        }
+      ]
+    },
+    {
+      "id": "chat-actions",
+      "name": "Chat actions (contrib/chat/browser/actions)",
+      "layer": "workbench",
+      "kind": "module",
+      "paths": [
+        "src/vs/workbench/contrib/chat/browser/actions"
+      ],
+      "summary": "Action2 classes for chat: submit, cancel, pickers, new chat. Each declares the menus it appears in and the context keys that show it.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts",
+          "line": 1200,
+          "expect": "export function registerChatExecuteActions(): DisposableStore {"
+        }
+      ]
+    },
+    {
       "id": "workbench-contrib",
       "name": "Workbench features (workbench/contrib)",
       "layer": "workbench",
@@ -299,6 +338,24 @@
           "path": ".fence/fence.json",
           "line": 3,
           "expect": "large repository"
+        }
+      ]
+    },
+    {
+      "id": "component-fixtures",
+      "name": "Component fixtures (UI rendered in a browser)",
+      "layer": "tooling",
+      "kind": "test",
+      "paths": [
+        "src/vs/workbench/test/browser/componentFixtures",
+        "test/componentFixtures"
+      ],
+      "summary": "Renders real workbench components with mocked services in the component explorer, for screenshots and Playwright checks. The chat input fixture adds its own toolbar items.",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/renderChatInput.ts",
+          "line": 293,
+          "expect": "menuService.addItem(MenuId.ChatExecute"
         }
       ]
     },
@@ -1351,6 +1408,435 @@
           "expect": "../../../src/vs/platform/agentHost/test/node/agentHostTestProfile.ts"
         }
       ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "501 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 22,
+          "expect": "../../../contrib/modernUI/browser/media/activityBar.css"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "base",
+      "kind": "depends",
+      "label": "492 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 6,
+          "expect": "../../../../base/browser/dom.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "platform",
+      "kind": "depends",
+      "label": "447 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/agentsVoice/voiceModeOnboarding.fixture.ts",
+          "line": 8,
+          "expect": "../../../../../platform/contextview/browser/contextView.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "base",
+      "kind": "depends",
+      "label": "383 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatFollowups.ts",
+          "line": 6,
+          "expect": "../../../../../../base/browser/dom.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "295 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts",
+          "line": 15,
+          "expect": "../chat.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "platform",
+      "kind": "depends",
+      "label": "267 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts",
+          "line": 9,
+          "expect": "../../../../../platform/actions/common/actions.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "platform",
+      "kind": "depends",
+      "label": "256 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputNoticeHub.ts",
+          "line": 7,
+          "expect": "../../../../../../platform/instantiation/common/extensions.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "workbench-contrib",
+      "kind": "depends",
+      "label": "254 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatFollowups.ts",
+          "line": 11,
+          "expect": "../../../common/participants/chatAgents.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "196 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/agentsVoice/browser/voiceModeOnboarding.ts",
+          "line": 27,
+          "expect": "../../chat/browser/widget/input/chatInputOnboarding.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "base",
+      "kind": "depends",
+      "label": "187 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityActions.ts",
+          "line": 6,
+          "expect": "../../../../../base/common/lifecycle.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "editor",
+      "kind": "depends",
+      "label": "176 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/aiStats.fixture.ts",
+          "line": 9,
+          "expect": "../../../../editor/test/common/core/random.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "171 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 15,
+          "expect": "../../../browser/parts/activitybar/activitybarPart.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-contrib",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "154 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/agentsVoice/browser/agentsVoice.contribution.ts",
+          "line": 54,
+          "expect": "../../chat/browser/actions/configureVoiceInstructionsAction.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "editor",
+      "kind": "depends",
+      "label": "96 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 42,
+          "expect": "../../../../../../editor/browser/config/editorConfiguration.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "sessions",
+      "kind": "depends",
+      "label": "94 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/chatProgressContentPart.fixture.ts",
+          "line": 39,
+          "expect": "../../../../../sessions/browser/media/style.css"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "66 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/contrib/automations/browser/automationDialog.ts",
+          "line": 73,
+          "expect": "../../../../workbench/contrib/chat/browser/widget/input/chatInputPart.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "66 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityHelp.ts",
+          "line": 20,
+          "expect": "../../../../services/agentHost/browser/codexContinuationService.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "component-fixtures",
+      "kind": "depends",
+      "label": "58 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/contrib/agentFeedback/test/browser/agentFeedbackEditorOverlayWidget.fixture.ts",
+          "line": 10,
+          "expect": "../../../../../workbench/test/browser/componentFixtures/fixtureUtils.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "editor",
+      "kind": "depends",
+      "label": "51 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatAccessibilityHelp.ts",
+          "line": 7,
+          "expect": "../../../../../editor/browser/editorBrowser.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "38 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/activityBarMenu.fixture.ts",
+          "line": 14,
+          "expect": "../../../../platform/theme/browser/defaultStyles.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "workbench",
+      "kind": "depends",
+      "label": "37 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 37,
+          "expect": "../../../../../services/remote/common/remoteAgentService.js"
+        }
+      ]
+    },
+    {
+      "from": "sessions",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "28 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/sessions/contrib/accountMenu/browser/account.contribution.ts",
+          "line": 55,
+          "expect": "../../../../workbench/contrib/chat/browser/actions/chatActions.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "26 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/agentsVoice/voiceModeOnboarding.fixture.ts",
+          "line": 11,
+          "expect": "../../../../contrib/chat/browser/widget/input/chatInputStack.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "extensions",
+      "kind": "depends",
+      "label": "16 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/fixtureSyntaxHighlighting.ts",
+          "line": 21,
+          "expect": "vscode-oniguruma"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "platform-theme",
+      "kind": "depends",
+      "label": "14 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputNotificationWidget.ts",
+          "line": 26,
+          "expect": "../../../../../../platform/theme/browser/defaultStyles.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "11 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+          "line": 124,
+          "expect": "../../actions/chatExecuteActions.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-actions",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "4 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/actions/chatActions.ts",
+          "line": 53,
+          "expect": "../widget/input/chatInputNoticeHub.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench-api",
+      "to": "chat-input",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/api/browser/mainThreadChatInputNotification.ts",
+          "line": 7,
+          "expect": "../../contrib/chat/browser/widget/input/chatInputNotificationService.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "component-fixtures",
+      "kind": "depends",
+      "label": "2 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/electron-browser/componentFixtures/fixtureSyntaxHighlighting.test.ts",
+          "line": 22,
+          "expect": "../../browser/componentFixtures/fixtureResourceLoader.js"
+        }
+      ]
+    },
+    {
+      "from": "chat-input",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/contrib/chat/browser/widget/input/modelPicker/modelPickerColors.ts",
+          "line": 6,
+          "expect": "../../../../../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/chat/chatAgentLifecycle.fixture.ts",
+          "line": 33,
+          "expect": "../../../../contrib/chat/browser/actions/chatToolActions.js"
+        }
+      ]
+    },
+    {
+      "from": "component-fixtures",
+      "to": "base-color",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/test/browser/componentFixtures/fixtureSyntaxHighlighting.ts",
+          "line": 7,
+          "expect": "../../../../base/common/color.js"
+        }
+      ]
+    },
+    {
+      "from": "workbench",
+      "to": "chat-actions",
+      "kind": "depends",
+      "label": "1 file imports",
+      "evidence": [
+        {
+          "path": "src/vs/workbench/workbench.web.main.ts",
+          "line": 109,
+          "expect": "./contrib/chat/browser/actions/exportAgentHostDebugLogsAction.js"
+        }
+      ]
     }
   ],
   "flows": [
@@ -1394,6 +1880,50 @@
             "path": "src/vs/editor/browser/gpu/renderStrategy/fullFileRenderStrategy.ts",
             "line": 410,
             "expect": "throw new BugIndicatingError('Invalid color format ' + value);"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chat-execute-toolbar",
+      "name": "A chat input button: menu contribution to toolbar",
+      "trigger": "The chat input renders, or a context key it depends on changes (input has text, a request starts)",
+      "summary": "Buttons beside Send are not built by the chat input. An Action2 declares MenuId.ChatExecute with a when clause; the input's execute toolbar shows every item whose clause holds and runs the action with the widget as context.",
+      "steps": [
+        {
+          "component": "chat-actions",
+          "action": "ChatSubmitAction declares the ChatExecute menu, order 4, shown when no request is active.",
+          "evidence": {
+            "path": "src/vs/workbench/contrib/chat/browser/actions/chatExecuteActions.ts",
+            "line": 228,
+            "expect": "id: MenuId.ChatExecute,"
+          }
+        },
+        {
+          "component": "chat-input",
+          "action": "The input part builds its execute toolbar from the menu passed in options.",
+          "evidence": {
+            "path": "src/vs/workbench/contrib/chat/browser/widget/input/chatInputPart.ts",
+            "line": 4309,
+            "expect": "this.executeToolbar.getElement().classList.add('chat-execute-toolbar');"
+          }
+        },
+        {
+          "component": "chat-input",
+          "action": "The input keeps chatInputHasText current, which when clauses can test.",
+          "evidence": {
+            "path": "src/vs/workbench/contrib/chat/common/actions/chatContextKeys.ts",
+            "line": 49,
+            "expect": "export const inputHasText"
+          }
+        },
+        {
+          "component": "component-fixtures",
+          "action": "The fixture adds the same menu items itself, so a new button needs a fixture line to be seen.",
+          "evidence": {
+            "path": "src/vs/workbench/test/browser/componentFixtures/chat/renderChatInput.ts",
+            "line": 300,
+            "expect": "menuService.addItem(MenuId.ChatExecute, { command: { id: 'workbench.action.chat.submit'"
           }
         }
       ]

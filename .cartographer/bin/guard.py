@@ -61,8 +61,10 @@ def enforced_label(rule):
         parts.append("CI" if rule.get("type") == "ratchet" else "Stop hook, pre-commit, CI")
     return ", ".join(parts)
 METRICS = ["layerViolations", "cycles", "unmodeledDependencies", "hiddenDependencies", "untestedComponents", "checkErrors"]
-METRIC_LABEL = {"layerViolations": "layer violations", "cycles": "dependency cycles", "unmodeledDependencies": "dependencies not in the model",
-                "hiddenDependencies": "hidden dependencies", "untestedComponents": "components no test imports", "checkErrors": "model check errors"}
+METRIC_LABEL = {"layerViolations": "dependencies that point the wrong way", "cycles": "circular dependencies",
+                "unmodeledDependencies": "dependencies the map does not know about", "hiddenDependencies": "files that keep changing together with no link in the map",
+                "untestedComponents": "parts of the code no test reaches", "checkErrors": "errors in the map"}
+RULES_FROM = None   # set by --rules-from
 ALLOW = re.compile(r"cartographer-allow:\s*([\w*.-]+)\s+until\s+(\d{4}-\d{2}-\d{2})\s+by\s+(\S+?)\s*[:\-]\s*(\S.*)")
 LOCKFILES = ["**/package-lock.json", "**/yarn.lock", "**/pnpm-lock.yaml", "**/poetry.lock", "**/Cargo.lock", "**/go.sum",
              "**/composer.lock", "**/Gemfile.lock", "**/*.min.js", "**/*.snap", "**/uv.lock"]
@@ -403,7 +405,10 @@ class Context:
         self.mapper = carto.Mapper(self.model.get("components", []))
         self.lidx = carto.layer_index(self.model)
         self.external = {c["id"] for c in self.model.get("components", []) if c.get("layer") == "external"}
-        self.config = carto.load(os.path.join(self.home, "guardrails.json")) or {"rules": [], "exceptions": []}
+        # Rules, exceptions and the ratchet baseline can come from another checkout (--rules-from), so CI judges a
+        # pull request by the base branch's rules, not by rules the pull request itself may have changed.
+        self.rules_home = RULES_FROM or self.home
+        self.config = carto.load(os.path.join(self.rules_home, "guardrails.json")) or {"rules": [], "exceptions": []}
         self.today = dt.date.today()
         self.agent = os.environ.get("CLAUDECODE") == "1" or bool(os.environ.get("CURSOR_AGENT"))   # running inside an agent's shell
         self._resolver = None
@@ -690,7 +695,7 @@ def metrics(ctx):
 
 
 def r_ratchet(rule, cs, ctx):
-    base = carto.load(os.path.join(ctx.home, "baseline.json"))
+    base = carto.load(os.path.join(ctx.rules_home, "baseline.json"))
     if not base:
         return [V(dict(rule, severity="warn"), None, None, "no baseline recorded", "Run `guard.py --baseline` and commit .cartographer/baseline.json.")]
     if ctx.graph and cs.sha and ctx.graph.get("commit"):
@@ -927,8 +932,15 @@ def evaluate(cs, ctx, rules=None, use_exceptions=True):
                 cands = [(ln, lines[ln - 1]) for ln in (v["line"], v["line"] - 1) if 0 < ln <= len(lines)]
             if v["type"] in FILE_LEVEL and v["path"] in by_path:
                 cands += by_path[v["path"]].added
+            fresh = set(by_path[v["path"]].added) if v["path"] in by_path else set()
             for ln, text in cands:
                 m = ALLOW.search(text)
+                if m and m.group(1) in (v["rule"], "*") and (ln, text) in fresh and not ctx.config.get("inlineAllowInChange"):
+                    # The author of a change cannot waive a rule for that same change: nobody checks the name it gives.
+                    notes.append({"rule": "exceptions", "severity": "warn", "path": v["path"], "line": ln, "type": "exception",
+                                  "message": "inline exception for %s, naming %s, was added in this change, so it does not count" % (v["rule"], m.group(3)),
+                                  "fix": "A person records the exception in .cartographer/guardrails.json, or it lands in its own reviewed change first."})
+                    break
                 if m and m.group(1) in (v["rule"], "*"):
                     try:
                         ok = dt.date.fromisoformat(m.group(2)) >= ctx.today
@@ -958,7 +970,7 @@ def report(cs, ctx, kept, suppressed, notes, errors, mode):
     info = [v for v in kept if v["severity"] == "info"]       # context for the reviewer: PR comment only, never a nag
     warn = [v for v in kept if v["severity"] not in ("block", "info")] + notes
     return {"kind": "cartograph-guard", "at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(), "mode": mode,
-            "label": cs.label, "files": len(cs.files), "rules": len(ctx.rules), "ok": not block,
+            "label": cs.label, "files": len(cs.files), "rules": len(ctx.rules), "ok": not block and not errors,
             "blocking": block, "warnings": warn, "info": info, "suppressed": suppressed, "errors": errors,
             "autoModel": not ctx.curated}
 
@@ -1150,14 +1162,21 @@ def suggest(ctx, since_days=365, max_commits=500):
     layers = [(l.get("name") or l.get("id")) if isinstance(l, dict) else str(l) for l in ctx.model.get("layers", [])
               if (l.get("id") if isinstance(l, dict) else l) != "external"]
     if ctx.curated and len(layers) >= 2 and "layering" not in have_types:
-        add({"id": "layering", "type": "layering", "severity": "block", "description": "Components depend downward through the model's layers: " + " → ".join(layers) + "."},
-            "The model orders %d layers; this keeps new code from importing upward." % len(layers))
+        add({"id": "one-way-dependencies", "type": "layering", "severity": "block",
+             "description": "Code only depends on the parts beneath it: " + " → ".join(layers) + ".",
+             "_stops": "A lower part of the code reaching up into a higher one, such as business logic importing from the screens."},
+            "The codebase map orders the code into %d parts. Keeping dependencies one way means the lower parts can be changed and tested "
+            "without the ones above, and agents often add a shortcut import that breaks this." % len(layers))
     if ctx.graph and "no-new-cycles" not in have_types:
-        add({"id": "no-new-cycles", "type": "no-new-cycles", "severity": "block", "description": "No import may close a dependency cycle between components."},
-            "Cycles make components impossible to change or release separately.")
+        add({"id": "no-circular-dependencies", "type": "no-new-cycles", "severity": "block",
+             "description": "No change may make two parts of the code depend on each other, directly or through other parts.",
+             "_stops": "A new import that closes a loop, so that changing either part means changing both."},
+            "Parts that depend on each other cannot be changed, tested or released on their own.")
     if ctx.model.get("snippets") and "pinned-snippets" not in have_types:
-        add({"id": "pinned-snippets", "type": "pinned-snippets", "severity": "block", "description": "Code the model pins as key must not change without the model."},
-            "%d snippets are pinned; changes to them silently invalidate the map." % len(ctx.model["snippets"]))
+        add({"id": "map-stays-current", "type": "pinned-snippets", "severity": "block",
+             "description": "A change to code the codebase map quotes as key updates the map in the same change.",
+             "_stops": "The map silently going out of date, so the next agent or engineer who reads it is misled."},
+            "The map quotes %d pieces of key code. Agents read the map before they edit, so it has to stay true." % len(ctx.model["snippets"]))
 
     # co-change rules from history, ranked by how often skipping the partner was followed by a fix to it
     if ctx.hist:
@@ -1188,9 +1207,11 @@ def suggest(ctx, since_days=365, max_commits=500):
                 pairs.append((missed_then_fixed, prob, p["shared"], a, b))
         pairs.sort(key=lambda x: (-x[0], -x[1], -x[2]))
         for mtf, prob, shared, a, b in pairs[:6]:
-            rid = "co-change-" + re.sub(r"[^a-z0-9]+", "-", stem(a).lower() + "-" + stem(b).lower()).strip("-")[:48]
+            rid = "change-together-" + re.sub(r"[^a-z0-9]+", "-", stem(a).lower() + "-" + stem(b).lower()).strip("-")[:48]
             add({"id": rid, "type": "co-change", "severity": "warn" if mtf == 0 else "block", "when": a, "require": b,
-                 "description": "%s changes with %s %d%% of the time (%d commits)." % (b, a, round(prob * 100), shared)},
+                 "description": "A change to %s also changes %s." % (posixpath.basename(a), posixpath.basename(b)),
+                 "_stops": "Changing %s and forgetting %s, which history shows go together (%d%% of %d commits)." % (
+                     posixpath.basename(a), posixpath.basename(b), round(prob * 100), shared)},
                 "%s followed %d of %d changes to %s; %d time(s) it was skipped and a fix to it followed within %d days." % (
                     posixpath.basename(b), shared, int(round(shared / prob)), posixpath.basename(a), mtf, FOLLOW_UP_DAYS))
 
@@ -1203,30 +1224,38 @@ def suggest(ctx, since_days=365, max_commits=500):
                 mig_dirs[posixpath.dirname(p)] += 1
         dirs = [d for d, n in mig_dirs.items() if n >= 3]
         if dirs:
-            add({"id": "applied-migrations", "type": "protected-paths", "severity": "block", "allowAdd": True,
-                 "paths": [d + "/**" for d in sorted(dirs)], "description": "Applied migrations are immutable; add a new migration instead.",
+            add({"id": "applied-migrations-unchanged", "type": "protected-paths", "severity": "block", "allowAdd": True,
+                 "paths": [d + "/**" for d in sorted(dirs)], "description": "A database migration that has been applied is never edited; schema changes are new migrations.",
+                 "_stops": "Editing a migration that has already run somewhere, so databases end up different from each other.",
                  "fix": "Write a new versioned migration that makes the change."},
                 "%d versioned migration folder(s): %s." % (len(dirs), ", ".join(sorted(dirs)[:3])))
 
     if ctx.graph and ctx.graph.get("api") and "interface-change" not in have_types:
         specs = [r[0] for r in (ctx.inv or {}).get("files", []) if re.search(r"(openapi|swagger)[^/]*\.(ya?ml|json)$", r[0], re.I)]
-        rule = {"id": "interface-change", "type": "interface-change", "severity": "warn", "on": "removed",
-                "description": "Removing or changing a declared interface (route, tool, topic) needs its contract updated."}
+        rule = {"id": "endpoint-removals-flagged", "type": "interface-change", "severity": "warn", "on": "removed",
+                "description": "A change that removes a public entry point (a web route, an API endpoint, a message topic) is flagged.",
+                "_stops": "Removing something other code or users call without anyone noticing in review."}
         if specs:
             rule["require"] = specs[:3]
             rule["severity"] = "block"
+            rule["description"] = "A change that removes a public entry point also updates %s." % posixpath.basename(specs[0])
         add(rule, "%d interface declarations found%s." % (len(ctx.graph["api"]), (" and a spec at " + specs[0]) if specs else ""))
 
     if ctx.graph and ctx.graph.get("tests") and "tests-required" not in have_types:
-        add({"id": "tests-required", "type": "tests-required", "severity": "warn", "minLines": 30,
-             "description": "A code change of 30+ lines comes with a test change."},
-            "%d test files import production code here, so the convention exists." % len(ctx.graph["tests"]))
+        add({"id": "tests-with-changes", "type": "tests-required", "severity": "warn", "minLines": 30,
+             "description": "A code change of 30 or more lines includes a change to a test.",
+             "_stops": "A sizeable change with no test touched, so nothing shows the new behaviour works."},
+            "%d test files here test production code, so testing changes is already the habit." % len(ctx.graph["tests"]))
     if "max-size" not in have_types:
-        add({"id": "max-size", "type": "max-size", "severity": "warn", "max": 1000, "description": "Changes stay reviewable."},
+        add({"id": "reviewable-size", "type": "max-size", "severity": "warn", "max": 1000,
+             "description": "A change stays under 1,000 changed lines.",
+             "_stops": "A change too big to review properly."},
             "Large changes get shallow reviews.")
     if "ratchet" not in have_types and ctx.graph:
-        add({"id": "ratchet", "type": "ratchet", "severity": "block", "description": "Structural debt never grows: " + ", ".join(METRIC_LABEL[m] for m in METRICS) + "."},
-            "Locks today's counts so they can only go down. Run --baseline after accepting.")
+        add({"id": "no-new-structural-debt", "type": "ratchet", "severity": "block",
+             "description": "Structural problems can only go down: " + ", ".join(METRIC_LABEL[m] for m in METRICS) + ".",
+             "_stops": "Any change that adds one more structural problem, while the ones already there are allowed until someone fixes them."},
+            "It records today's counts and fails a change that raises any of them, so the code can only get cleaner.")
 
     rep = replay(ctx, [c["rule"] for c in cands], since_days, max_commits) if cands else {"rules": []}
     by = {r["rule"]: r for r in rep["rules"]}
@@ -1407,6 +1436,7 @@ def propose(home, rules, by_id=None):
     path = os.path.join(home, "guardrails.proposed.json")
     prop = carto.load(path) or {"schemaVersion": 1, "rules": []}
     have = {r["id"] for r in prop["rules"]} | {r["id"] for r in (carto.load(os.path.join(home, "guardrails.json")) or {}).get("rules", [])}
+    have |= {x.get("id") for x in prop.get("rejected", [])}
     n = 0
     for r in rules:
         if r["id"] in have:
@@ -1417,25 +1447,45 @@ def propose(home, rules, by_id=None):
             rp = by_id[r["id"]].get("replay")
             if rp:
                 r["_replay"] = {k: rp.get(k) for k in ("replayable", "commits", "fired", "followedByFixOrRevert", "hitRatePct", "baseRatePct")}
+                head = git(os.path.dirname(home), "rev-parse", "--short=12", "HEAD", check=False)
+                if head:
+                    r["_replay"]["head"] = head.strip()
+                ex = [{k: x.get(k) for k in ("sha", "date", "subject", "outcome")} for x in (rp.get("examples") or [])[:5]]
+                if ex:
+                    r["_replay"]["examples"] = ex
         prop["rules"].append(r)
         n += 1
     carto.save(path, prop, pretty=True)
     return n
 
 
-def accept(home, accept_ids, reject_ids):
+def accept(home, accept_ids, reject_ids, why=None, by=None):
+    """Apply a person's decision. why and by are recorded with it: on the accepted rule as "decided", on the
+    rejected entry beside its date, together with the replay evidence the person saw."""
     ppath, gpath = os.path.join(home, "guardrails.proposed.json"), os.path.join(home, "guardrails.json")
     prop = carto.load(ppath) or {"schemaVersion": 1, "rules": []}
     cfg = carto.load(gpath) or {"schemaVersion": 1, "rules": [], "exceptions": []}
     keep, moved = [], []
     for r in prop["rules"]:
+        record = {k: v for k, v in (("by", by), ("on", dt.date.today().isoformat()), ("why", why), ("replay", r.get("_replay"))) if v}
         if r["id"] in accept_ids:
+            evidence = r.get("_replay")
             r = {k: v for k, v in r.items() if not k.startswith("_")}
             r["status"] = "active"
             r.setdefault("added", dt.date.today().isoformat())
+            if why or by:
+                r["decided"] = record
+            elif evidence:
+                r["decided"] = {"on": record["on"], "replay": evidence}
             cfg["rules"] = [x for x in cfg["rules"] if x["id"] != r["id"]] + [r]
             moved.append(r["id"])
-        elif r["id"] not in reject_ids:
+        elif r["id"] in reject_ids:
+            # Remembered, so --suggest does not propose it again; the pull request that removed it is the decision record.
+            prop.setdefault("rejected", [])
+            entry = {"id": r["id"], "rejected": record["on"]}
+            entry.update({k: v for k, v in record.items() if k in ("by", "why")})
+            prop["rejected"] = [x for x in prop["rejected"] if x.get("id") != r["id"]] + [entry]
+        else:
             keep.append(r)
     prop["rules"] = keep
     carto.save(gpath, cfg, pretty=True)
@@ -1472,7 +1522,8 @@ def run(repo, mode, base=None, head=None, refresh=False, model=None, log=True, s
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    # No abbreviations: --acc must not mean --accept, so a hook that refuses --accept cannot be talked around.
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, allow_abbrev=False)
     ap.add_argument("--repo", default=".")
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--staged", action="store_true")
@@ -1491,6 +1542,11 @@ def main():
     g.add_argument("--outcomes", metavar="HTML", help="write the outcomes report: what was blocked, what got through and the check we would build, what only a person can judge")
     g.add_argument("--accept", nargs="+", metavar="ID", help="move proposed rules into guardrails.json (a human decision)")
     g.add_argument("--reject", nargs="+", metavar="ID", help="drop proposed rules")
+    g.add_argument("--serve", action="store_true", help="open the rules workbench for this checkout (a person decides rules there)")
+    ap.add_argument("--why", help="with --accept/--reject: the person's reason, recorded with the decision")
+    ap.add_argument("--by", help="with --accept/--reject: who decided (recorded with the decision)")
+    ap.add_argument("--port", type=int, default=4340, help="with --serve: the local port (default 4340)")
+    ap.add_argument("--no-browser", action="store_true", help="with --serve: do not open a browser")
     ap.add_argument("--base", help="base ref (default: the default branch)")
     ap.add_argument("--rule", nargs="+", action="extend", help="limit --replay to these rule ids")
     ap.add_argument("--days", type=int, default=None, help="history window for --replay/--suggest (default historyDays or 365)")
@@ -1499,6 +1555,7 @@ def main():
     ap.add_argument("--force", action="store_true", help="with --baseline: allow metrics to rise")
     ap.add_argument("--refresh", action="store_true", help="run collect.py and graph.py first so the ratchet sees this tree")
     ap.add_argument("--json", help="write the result as JSON to this path")
+    ap.add_argument("--rules-from", help="read guardrails.json and baseline.json from this .cartographer folder (CI passes the base branch's)")
     ap.add_argument("--markdown", help="write a PR comment section to this path")
     ap.add_argument("--quiet", action="store_true", help="print nothing when everything passes")
     ap.add_argument("--no-log", action="store_true")
@@ -1506,6 +1563,9 @@ def main():
     ap.add_argument("--simulated", action="store_true", help="with --log: show the history simulation instead of real activity")
     ap.add_argument("--last", type=int, default=50, help="with --log: number of events (default 50)")
     a = ap.parse_args()
+    global RULES_FROM
+    if a.rules_from:
+        RULES_FROM = os.path.abspath(a.rules_from)
     repo = os.path.abspath(a.repo)
     home = carto.home(repo)
     days = a.days or carto.load_config(repo).get("historyDays", 365)
@@ -1553,12 +1613,15 @@ def main():
             print("%-36s %-16s %-5s %s%s" % (r["id"], r["type"], r["severity"], c["why"], stat))
         if a.write and res["candidates"]:
             n = propose(home, [c["rule"] for c in res["candidates"]], {c["rule"]["id"]: c for c in res["candidates"]})
-            print("wrote %d proposal(s) to .cartographer/guardrails.proposed.json; accept with guard.py --accept ID" % n)
+            print("wrote %d proposal(s) to .cartographer/guardrails.proposed.json; a person decides them with guard.py --serve" % n)
         if a.json:
             carto.save(a.json, res, pretty=True)
         return 0
     if a.accept or a.reject:
-        return accept(home, a.accept or [], a.reject or [])
+        return accept(home, a.accept or [], a.reject or [], why=a.why, by=a.by)
+    if a.serve:
+        import rules_app
+        return rules_app.serve(repo, port=a.port, open_browser=not a.no_browser)
     if a.table:
         print(rule_table(Context(repo)))
         return 0
@@ -1630,8 +1693,11 @@ def main():
     mode = "staged" if a.staged else "worktree" if a.worktree else "range"
     res = run(repo, mode, a.base, a.head, refresh=a.refresh, log=not a.no_log)
     if not res["rules"]:
+        # Still write the result, so a caller can tell "no rules" from "the guard never ran".
+        if a.json:
+            carto.save(a.json, res, pretty=True)
         if not a.quiet:
-            print("guard: no active rules in .cartographer/guardrails.json (try guard.py --suggest)")
+            print("guard: no active rules in .cartographer/guardrails.json, so nothing is enforced (try guard.py --suggest)")
         return 0
     carto.save(os.path.join(home, "facts", "guard", "last.json"), res)
     out = text_report(res, a.quiet)

@@ -29,7 +29,8 @@
         "build/**/*.{ts,mjs}",
         "extensions/**/*.ts"
       ],
-      "ratchet": "diff"
+      "ratchet": "diff",
+      "explain": "VS Code's own ESLint rules on the changed files, including its layering and import rules. Only findings the change adds count."
     },
     {
       "id": "types",
@@ -43,7 +44,8 @@
       "include": [
         "src/typings",
         "src/vscode-dts/vscode.d.ts"
-      ]
+      ],
+      "explain": "The TypeScript compiler on the changed files against VS Code's tsconfig. Only errors the change adds count."
     },
     {
       "id": "unit",
@@ -56,7 +58,9 @@
       "parse": "exit",
       "files": "affected",
       "glob": "src/vs/**/test/{common,node}/**/*.test.ts",
-      "hint": "Run the failing test: node .fence/local/unit-affected.mjs <file>"
+      "hint": "Run the failing test: node .fence/local/unit-affected.mjs <file>",
+      "explain": "Node unit tests in the test files that import a changed file, run with VS Code's own test setup.",
+      "results": ".cache/fence/results/unit.xml"
     },
     {
       "id": "browser",
@@ -69,7 +73,9 @@
       "parse": "exit",
       "files": "affected",
       "glob": "src/vs/**/test/browser/**/*.test.ts",
-      "hint": "Run one: node test/unit/browser/index.js --browser chromium --run <file> (after node build/next/build-fast.ts --client-only)"
+      "hint": "Run one: node test/unit/browser/index.js --browser chromium --run <file> (after node build/next/build-fast.ts --client-only)",
+      "explain": "Browser unit tests in the test files that import a changed file, run in Chromium by VS Code's own runner.",
+      "results": ".cache/fence/results/browser.xml"
     }
   ],
   "lintCategories": {
@@ -117,5 +123,7 @@
         "--fix-lines"
       ]
     ]
-  }
+  },
+  "guardMayBeEmpty": true,
+  "$guardMayBeEmpty": "Set while onboarding: no guard rule is accepted yet, so the guard enforces nothing. A person removes this once they accept rules in the rules workbench (guard.py --serve)."
 }

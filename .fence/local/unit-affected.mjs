@@ -50,7 +50,9 @@ for (const d of new Set(files.map((f) => path.dirname(f)))) {
 const compiled = files.map((f) => path.join(out, path.relative("src", f)).replace(/\.ts$/, ".js"));
 const setup = path.join(ROOT, ".fence", "local", "unit-setup.mjs");
 const mochaBin = path.join(ROOT, "node_modules", "mocha", "bin", "mocha.js");
-const mocha = spawnSync(process.execPath, ["--import", setup, mochaBin, "--ui", "tdd", "--reporter", "dot", ...compiled], {
+// Per-test results for the review page: mocha-junit-reporter, which VS Code already uses in its own CI.
+const results = path.join(ROOT, ".cache", "fence", "results", "unit.xml");
+const mocha = spawnSync(process.execPath, ["--import", setup, mochaBin, "--ui", "tdd", "--reporter", "mocha-junit-reporter", "--reporter-options", `mochaFile=${results}`, ...compiled], {
   cwd: ROOT,
   encoding: "utf8",
   env: { ...process.env, FENCE_REPO_ROOT: ROOT, FENCE_UNIT_OUT: out },

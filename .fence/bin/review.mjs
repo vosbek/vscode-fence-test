@@ -104,7 +104,7 @@ export function approvalState(rec, approvals = []) {
 }
 
 // Top-level declarations only (and methods one level into a Python or Java class), not local variables.
-const DECL = /^(?:export\s+)?(?:async\s+)?(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=|class\s+(\w+))|^\s{0,4}(?:async\s+)?def\s+(\w+)|^\s{0,4}(?:public|private|protected)\s+(?:static\s+)?[\w<>[\]]+\s+(\w+)\s*\(/;
+const DECL = /^(?:export\s+)?(?:async\s+)?(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*(?::[^=]+)?=|class\s+(\w+))|^\s{0,4}(?:async\s+)?def\s+(\w+)|^\s{0,4}(?:public|private|protected)\s+(?:static\s+)?[\w<>[\]]+\s+(\w+)\s*\(/;
 const declName = (l) => {
   const m = DECL.exec(l);
   return m ? m.slice(1).find(Boolean) : null;
@@ -234,7 +234,7 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
   // 4. What else uses the changed code
   // A test file "ran" when any of its tests has a result. In large-repository mode only affected tests run; the rest
   // are counted, not listed as passing.
-  const ran = (t) => !results.length || titlesOf.get(t).titles.some((x) => byName.has(x));
+  const ran = (t) => titlesOf.get(t).titles.some((x) => byName.has(x));
   const holds = liveCode.map((f) => {
     const tfs = (reach[f.file] ?? []).filter((t) => titlesOf.has(t));
     const ranTfs = tfs.filter(ran);
@@ -374,13 +374,16 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
     const shown = h.ranTfs.slice(0, 6).map(c).join(", ") + (h.ranTfs.length > 6 ? ` and ${h.ranTfs.length - 6} more` : "");
     const others = h.notRun ? ` ${plural(h.notRun, "other test file")} use${h.notRun === 1 ? "s" : ""} it and ${h.notRun === 1 ? "was" : "were"} not run here (only affected tests run on a large repository; the rest run in the repository's own CI).` : "";
     L.push(h.ranTfs.length
-      ? `- ${c(h.f.file)} is used by ${shown}, which ran: ${h.existing.length - bad.length} of ${plural(h.existing.length, "existing test")} pass${bad.length ? `; **not passing:** ${bad.map((x) => `${x.title} (${x.status})`).join(", ")}` : ""}.${others}`
-      : `- ${c(h.f.file)}: no test that uses it ran here.${others}`);
+      ? `- ${c(h.f.file)} is used by ${shown}, which ran: ${h.existing.length - bad.length} of ${plural(h.existing.length, "existing test")} pass${bad.length ? `; **not passing:** ${bad.slice(0, 5).map((x) => `${x.title} (${x.status})`).join(", ")}${bad.length > 5 ? `, and ${bad.length - 5} more` : ""}` : ""}.${others}`
+      : `- ${c(h.f.file)}: no test that uses it ran here${results.length ? "" : " (no check wrote per-test results, so this page cannot say which tests ran)"}.${others}`);
   }
   L.push("");
   if (uniqueExisting.length) {
     L.push("<details><summary>Every existing test that uses the changed code, by name</summary>", "");
-    for (const x of uniqueExisting) L.push(`- ${x.status === "passed" ? "passed" : `**${x.status}**`}: ${x.title} (${c(x.file)})`);
+    // Not-passing first, then at most 100 names: a page is read, not scrolled.
+    const ordered = [...uniqueExisting.filter((x) => x.status !== "passed"), ...uniqueExisting.filter((x) => x.status === "passed")];
+    for (const x of ordered.slice(0, 100)) L.push(`- ${x.status === "passed" ? "passed" : `**${x.status}**`}: ${x.title} (${c(x.file)})`);
+    if (ordered.length > 100) L.push(`- and ${ordered.length - 100} more`);
     L.push("", "</details>", "");
   }
 

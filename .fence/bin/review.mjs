@@ -188,7 +188,8 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
   const byName = new Map();
   // A title with \${...} in it is a parameterized test: it runs once per value under the filled-in name.
   const templateResult = (title) => {
-    if (!title.includes("${")) return undefined;
+    // Only titles with real words around the placeholders: "${name}" alone would match every result.
+    if (!title.includes("${") || title.replace(/\$\{[^}]*\}/g, "").replace(/\W/g, "").length < 8) return undefined;
     const rx = new RegExp(`^${title.split(/\$\{[^}]*\}/).map((p) => p.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&")).join(".+")}$`);
     const hits = results.filter((r) => rx.test(r.classname && r.classname !== "test" ? r.classname : r.name) || rx.test(r.name));
     if (!hits.length) return undefined;
@@ -242,7 +243,8 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
   // 4. What else uses the changed code
   // A test file "ran" when any of its tests has a result. In large-repository mode only affected tests run; the rest
   // are counted, not listed as passing.
-  const ran = (t) => titlesOf.get(t).titles.some((x) => statusOf(x));
+  // A file ran when one of its tests ran under its exact title; a pattern match alone is not evidence the file ran.
+  const ran = (t) => titlesOf.get(t).titles.some((x) => byName.has(x));
   const holds = liveCode.map((f) => {
     const tfs = (reach[f.file] ?? []).filter((t) => titlesOf.has(t));
     const ranTfs = tfs.filter(ran);

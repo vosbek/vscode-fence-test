@@ -181,7 +181,7 @@ const cell = (s) => String(s ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
  *   intent    { path, record, approvals } | null
  *   history   [{ sha, date, subject }] recent changes to the fence's configuration
  */
-export function buildReview({ report, files, results = [], testFiles = [], reach = {}, near = null, intent = null, history = [], head = "", base = "", diffBudget = DIFF_BUDGET }) {
+export function buildReview({ report, files, results = [], testFiles = [], reach = {}, near = null, intent = null, history = [], head = "", base = "", diffBudget = DIFF_BUDGET, intentTool = "toolkit/bin/intent.py" }) {
   const checks = report.results ?? [];
   const failed = checks.filter((r) => r.status === "fail");
   const skipped = checks.filter((r) => r.status === "skip");
@@ -277,7 +277,7 @@ export function buildReview({ report, files, results = [], testFiles = [], reach
   } else {
     for (const role of ["owner", "architect"]) {
       const a = approval[role];
-      const cmd = `python3 toolkit/bin/intent.py approve ${intent.path} --role ${role} --by "<name>"${role === "owner" && guesses.length ? " --confirm-assumptions" : ""}`;
+      const cmd = `python3 ${intentTool} approve ${intent.path} --role ${role} --by "<name>"${role === "owner" && guesses.length ? " --confirm-assumptions" : ""}`;
       if (a.state === "none") blockers.push(`**The ${role} has not approved the intent record.** Until they do, the examples below prove the author's reading of the request${role === "owner" && guesses.length ? ` (${plural(guesses.length, "item")} are the author's assumptions: ${guesses.map((x) => x.id ?? "out of scope").join(", ")})` : ""}. They run \`${cmd}\` in their own terminal (agents are refused), then commit and push the record.`);
       if (a.state === "stale") blockers.push(`**The intent record changed after ${a.by} approved it as ${role}.** What is tested is not what they approved. They approve the new version (\`${cmd}\`), or the change goes back.`);
     }
@@ -601,7 +601,9 @@ function gather(base, root) {
       const [sha, date, subject] = l.split("\t");
       return { sha, date, subject };
     });
-  return { files, reach, near, testFiles, intent, history };
+  // Where intent.py lives: .cartographer/bin in an onboarded repository, toolkit/bin in the factory's own.
+  const intentTool = existsSync(path.join(root, ".cartographer", "bin", "intent.py")) ? ".cartographer/bin/intent.py" : "toolkit/bin/intent.py";
+  return { files, reach, near, testFiles, intent, history, intentTool };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

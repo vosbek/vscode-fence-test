@@ -3,7 +3,7 @@
 A read-only copy of the software factory's views for this fork, built from the `factory/onboard` branch:
 
 - `index.html`: start here
-- `map/`: the codebase map as an expandable C4 diagram (Cartographer viewer); `map/#/guard` lists every guardrail: proposed rules and fence checks
+- `map/`: the codebase map as an expandable C4 diagram (Cartographer viewer); `map/#/guard` lists every guardrail: rules in force, proposed rules and fence checks
 - `rules/`: the rules page (every guard rule, fence check, exception and owner)
 - `c4/`: the C4 diagrams from `/explain-repo`
 
